@@ -3,7 +3,9 @@
 The high level goals of this project are to create a database which is, simple and fast. In order to achieve these goals 
 it will be built in Rust, atop RocksDB and exist as a gRPC server.
 
-For more information and a better writeup, look here: https://problemchild.engineering/2023-08-19-the-database/
+For more information and a better writeup, look here: https://problemchild.engineering/2023-08-19-the-database
+
+For some really imprecise (just run on my local with [ghz](https://ghz.sh)), initial benchmarks you can also look here: https://hachyderm.io/@seanwatters/110948629015247923 
 
 ## Usage
 
