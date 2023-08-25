@@ -18,7 +18,7 @@ jobs:
     - uses: arduino/setup-protoc@v2
     - name: Build
       run: cargo build --verbose
-    - name: Run tests
+    - name: Tests
       run: cargo test --verbose
-    - name: Run Benchmarks
+    - name: Benchmark
       run: cargo bench --verbose

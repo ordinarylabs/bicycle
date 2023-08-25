@@ -20,22 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 syntax = "proto3";
 package database;
 
-message User {
+message Person {
     string pk = 1;
-    string password = 2;
-    bytes verifying_key = 3;
-    bytes key_sets = 4;
-    bytes nonce = 5;
-    bytes encrypted_content = 6;
-    bytes sender_public_key = 7;
-    bytes exchange_keys = 8;
+    string name = 2;
+    uint32 age = 3;
 }
 
-message Message {
+message Dog {
     string pk = 1;
-    bytes key_sets = 2; 
-    bytes nonce = 3;    
-    bytes encrypted_content = 4;
-    bytes sender_public_key = 5;
-    bytes signature = 6;
+    string breed = 2;
 }
+        
