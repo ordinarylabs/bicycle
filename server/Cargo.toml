@@ -1,0 +1,41 @@
+# Bicycle is a database, used for things databases are used for.
+
+# Copyright (C) 2023  sean watters
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+[package]
+name = "bicycle_server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+database_core = { workspace = true }
+
+prost = { workspace = true }
+
+tonic = { workspace = true }
+tonic-reflection = { workspace = true }
+
+lazy_static = { workspace = true }
+
+tokio-stream = { workspace = true }
+tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
+
+jemallocator = "0.5.0"
+parking_lot = "0.12.1"
+chrono = "0.4.9"
+bcrypt = "0.14.0"
+jsonwebtoken = "8.3.0"
+
+serde = { version = "1.0", features = ["derive"] }
