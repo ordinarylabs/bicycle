@@ -19,13 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use tonic::transport::Server;
 
-use database_core::proto;
+use bicycle_core::proto;
 
-use proto::database_server::DatabaseServer;
+use proto::bicycle_server::BicycleServer;
 use proto::FILE_DESCRIPTOR_SET;
 
-mod database;
-use database::DatabaseService;
+mod bicycle;
+use bicycle::BicycleService;
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
@@ -39,16 +39,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .unwrap();
 
-    let database_service = DatabaseService {};
+    let bicycle_service = BicycleService {};
 
-    println!("Database server listening at {}", addr);
+    println!("Bicycle Server 🚲 listening at: {}", addr);
 
     // TODO: add tracing and logs (`tracing` crate and `tower` middleware for logging)
     // TODO: make all instrumentation OTel compatible
 
     Server::builder()
         .add_service(reflection_service)
-        .add_service(DatabaseServer::new(database_service))
+        .add_service(BicycleServer::new(bicycle_service))
         .serve(addr)
         .await?;
 

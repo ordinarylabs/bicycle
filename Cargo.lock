@@ -152,12 +152,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "bicycle_core"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "prost",
+ "rocksdb",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
 name = "bicycle_server"
 version = "0.1.0"
 dependencies = [
  "bcrypt",
+ "bicycle_core",
  "chrono",
- "database_core",
  "jemallocator",
  "jsonwebtoken",
  "lazy_static",
@@ -310,17 +321,6 @@ checksum = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
 dependencies = [
  "generic-array",
  "typenum",
-]
-
-[[package]]
-name = "database_core"
-version = "0.1.0"
-dependencies = [
- "lazy_static",
- "prost",
- "rocksdb",
- "tonic",
- "tonic-build",
 ]
 
 [[package]]

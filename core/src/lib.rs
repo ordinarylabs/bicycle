@@ -24,10 +24,10 @@ use rocksdb::{Options, DB};
 
 #[allow(non_snake_case)]
 pub mod proto {
-    tonic::include_proto!("database");
+    tonic::include_proto!("bicycle");
 
     pub const FILE_DESCRIPTOR_SET: &[u8] =
-        tonic::include_file_descriptor_set!("database_descriptor");
+        tonic::include_file_descriptor_set!("bicycle_descriptor");
 }
 
 pub mod models;
@@ -38,6 +38,6 @@ lazy_static! {
         let mut opts = Options::default();
         opts.create_if_missing(true);
 
-        DB::open(&opts, "database").unwrap()
+        DB::open(&opts, "__bicycle__").unwrap()
     };
 }

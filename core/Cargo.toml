@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "database_core"
+name = "bicycle_core"
 version = "0.1.0"
 edition = "2021"
 

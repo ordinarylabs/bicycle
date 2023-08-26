@@ -19,4 +19,6 @@
 target
 *.db
 out
-**/database
+__bicycle__
+__precompile__
+

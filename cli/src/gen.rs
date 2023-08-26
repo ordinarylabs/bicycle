@@ -19,22 +19,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::fs;
 use std::io::prelude::*;
+use std::path::Path;
 
 use heck::{ToShoutySnakeCase, ToSnakeCase};
 use lazy_static::lazy_static;
 
-use crate::{utils::Model, OUT_DIR};
+use crate::{utils::Model, PRECOMPILE_DIR};
 
 const WORKSPACE_CARGO_TOML: &'static str = include_str!("../../Cargo.toml");
 
 const CORE_BUILD_RS: &'static str = include_str!("../../core/build.rs");
 const CORE_CARGO_TOML: &'static str = include_str!("../../core/Cargo.toml");
-const CORE_DATABASE_PROTO: &'static str = include_str!("../../core/database.proto");
+const CORE_DATABASE_PROTO: &'static str = include_str!("../../core/bicycle.proto");
 const CORE_SRC_LIB_RS: &'static str = include_str!("../../core/src/lib.rs");
 const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!("../../core/src/models/example.rs");
 
 const SERVER_CARGO_TOML: &'static str = include_str!("../../server/Cargo.toml");
-const SERVER_SRC_DATABASE_RS: &'static str = include_str!("../../server/src/database.rs");
+const SERVER_SRC_BICYCLE_RS: &'static str = include_str!("../../server/src/bicycle.rs");
 const SERVER_SRC_MAIN_RS: &'static str = include_str!("../../server/src/main.rs");
 
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
@@ -67,8 +68,8 @@ lazy_static! {
         "##MODEL_RPCS_START##",
         Some("##MODEL_RPCS_END##"),
     );
-    static ref DATABASE_HANDLERS: String = get_between(
-        SERVER_SRC_DATABASE_RS,
+    static ref SERVER_HANDLERS: String = get_between(
+        SERVER_SRC_BICYCLE_RS,
         "##START_HANDLERS##",
         Some("##END_HANDLERS##")
     );
@@ -77,11 +78,16 @@ lazy_static! {
 // TODO: remove all .unwrap()s
 
 fn create_dir(path: &str) {
-    fs::create_dir(format!("{}/{}", OUT_DIR, path)).unwrap();
+    let path = format!("{}/{}", PRECOMPILE_DIR, path);
+
+    if Path::new(&path).exists() {
+        fs::remove_dir_all(path.clone()).unwrap();
+    }
+    fs::create_dir(&path).unwrap();
 }
 
 fn write_file(path: &str, content: &str) {
-    let mut file = fs::File::create(format!("{}/{}", OUT_DIR, path)).unwrap();
+    let mut file = fs::File::create(format!("{}/{}", PRECOMPILE_DIR, path)).unwrap();
     file.write_all(content.as_bytes()).unwrap();
 }
 
@@ -108,7 +114,7 @@ pub(crate) fn gen(models: Vec<Model>) {
 
     let mut core_models_mod_rs = "".to_string();
 
-    let mut database_handlers_block = "".to_string();
+    let mut server_handlers_block = "".to_string();
 
     for (i, model) in models.iter().enumerate() {
         let (rpc_chunk, messages_chunk) = gen_proto(&model);
@@ -139,11 +145,11 @@ pub(crate) fn gen(models: Vec<Model>) {
             &model_file_content,
         );
 
-        database_handlers_block = format!(
+        server_handlers_block = format!(
             "{}{}{}",
-            database_handlers_block,
+            server_handlers_block,
             if i == 0 { "" } else { "\n" },
-            replace_model_name(&model, &DATABASE_HANDLERS)
+            replace_model_name(&model, &SERVER_HANDLERS)
         );
     }
 
@@ -151,15 +157,15 @@ pub(crate) fn gen(models: Vec<Model>) {
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
 
-    write_file("core/database.proto", &proto);
+    write_file("core/bicycle.proto", &proto);
     write_file("core/src/models/mod.rs", &core_models_mod_rs);
 
     write_file("server/src/main.rs", &SERVER_SRC_MAIN_RS);
 
-    let database_rs =
-        SERVER_SRC_DATABASE_RS.replace(&DATABASE_HANDLERS.to_string(), &database_handlers_block);
+    let bicycle_rs =
+        SERVER_SRC_BICYCLE_RS.replace(&SERVER_HANDLERS.to_string(), &server_handlers_block);
 
-    write_file("server/src/database.rs", &database_rs);
+    write_file("server/src/bicycle.rs", &bicycle_rs);
 }
 
 fn gen_proto(model: &Model) -> (String, String) {

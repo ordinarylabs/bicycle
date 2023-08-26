@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 syntax = "proto3";
-package database;
+package bicycle;
 
 // ##MODEL_MESSAGES_START##
 message Examples { 
@@ -48,7 +48,7 @@ message IndexQuery {
 
 message Empty {}
 
-service Database {
+service Bicycle {
   // ##MODEL_RPCS_START##
   rpc GetExamplesByPk(IndexQuery) returns (Examples) {}
   rpc DeleteExamplesByPk(IndexQuery) returns (Empty) {}

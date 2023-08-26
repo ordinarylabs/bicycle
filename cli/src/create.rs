@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
 
@@ -25,15 +25,18 @@ use prost::Message;
 use prost_types::FileDescriptorSet;
 
 use crate::utils::construct_model;
-use crate::{gen, utils::Model, OUT_DIR};
+use crate::{gen, utils::Model, PRECOMPILE_DIR};
 
 pub fn create(schema_path: &str) {
-    fs::create_dir(OUT_DIR).unwrap();
+    if Path::new(PRECOMPILE_DIR).exists() {
+        fs::remove_dir_all(PRECOMPILE_DIR).unwrap();
+    }
+    fs::create_dir(PRECOMPILE_DIR).unwrap();
 
-    std::env::set_var("OUT_DIR", OUT_DIR);
-    let out_dir = PathBuf::from(OUT_DIR);
+    std::env::set_var("OUT_DIR", PRECOMPILE_DIR);
+    let precompile_dir = PathBuf::from(PRECOMPILE_DIR);
 
-    let tmp_desc_path = out_dir.join("tmp_desc.bin");
+    let tmp_desc_path = precompile_dir.join("tmp_desc.bin");
 
     tonic_build::configure()
         .file_descriptor_set_path(&tmp_desc_path)
@@ -55,11 +58,11 @@ pub fn create(schema_path: &str) {
     }
 
     fs::remove_file(tmp_desc_path).unwrap();
-    fs::remove_file(out_dir.join("database.rs")).unwrap();
+    fs::remove_file(precompile_dir.join("database.rs")).unwrap();
 
     gen::gen(models);
 
-    if let Err(err) = env::set_current_dir(OUT_DIR) {
+    if let Err(err) = env::set_current_dir(PRECOMPILE_DIR) {
         eprintln!("Failed to change directory: {}", err);
         exit(1);
     }
@@ -69,10 +72,12 @@ pub fn create(schema_path: &str) {
         .output()
         .unwrap();
 
-    fs::create_dir("../out").unwrap();
+    if !Path::new("../out").exists() {
+        fs::create_dir("../out").unwrap();
+    }
 
     Command::new("mv")
-        .args(["./core/database.proto", "../out"])
+        .args(["./core/bicycle.proto", "../out"])
         .output()
         .unwrap();
 
@@ -81,5 +86,5 @@ pub fn create(schema_path: &str) {
         .output()
         .unwrap();
 
-    fs::remove_dir_all(&format!("../{}", OUT_DIR)).unwrap();
+    fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
 }

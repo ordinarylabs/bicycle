@@ -38,5 +38,5 @@ rusqlite = "0.29.0"
 tokio-stream = "0.1.14"
 tokio = "1.29.1"
 
-database_core = { path = "./core" }
-database_server = { path = "./server" }
+bicycle_core = { path = "./core" }
+bicycle_server = { path = "./server" }

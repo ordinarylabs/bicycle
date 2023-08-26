@@ -19,15 +19,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use tonic::{Request, Response, Status};
 
-use database_core::{models, proto};
+use bicycle_core::{models, proto};
 
-use proto::database_server::Database;
+use proto::bicycle_server::Bicycle;
 use proto::{Empty, IndexQuery};
 
-pub struct DatabaseService {}
+pub struct BicycleService {}
 
 #[tonic::async_trait]
-impl Database for DatabaseService {
+impl Bicycle for BicycleService {
     // ##START_HANDLERS##
     async fn get_examples_by_pk(
         &self,

@@ -23,7 +23,7 @@ mod create;
 mod gen;
 mod utils;
 
-pub(crate) const OUT_DIR: &'static str = "./__precompile__";
+pub(crate) const PRECOMPILE_DIR: &'static str = "./__precompile__";
 
 fn main() {
     let args: Vec<String> = env::args().collect();

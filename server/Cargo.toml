@@ -20,7 +20,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-database_core = { workspace = true }
+bicycle_core = { workspace = true }
 
 prost = { workspace = true }
 

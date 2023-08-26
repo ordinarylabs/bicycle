@@ -20,10 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use std::{env, path::PathBuf};
 
 fn main() {
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let precompile_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     tonic_build::configure()
-        .file_descriptor_set_path(out_dir.join("database_descriptor.bin"))
-        .compile(&["database.proto"], &["proto"])
+        .file_descriptor_set_path(precompile_dir.join("bicycle_descriptor.bin"))
+        .compile(&["bicycle.proto"], &["proto"])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 }
