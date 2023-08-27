@@ -1,9 +1,8 @@
 # Bicycle 🚲
 
-> We're striving to reduce dynamic query parsing at run time.
-
 Bicycle 🚲 is a framework for defining database schemas whose access patterns are generated as code and compiled into each server binary. 
 
+> We're striving to reduce dynamic query parsing at run time.
 
 ## Usage
 
