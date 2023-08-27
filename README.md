@@ -1,5 +1,7 @@
 # Bicycle 🚲
 
+Bicycle 🚲 is a framework for defining database servers, with access patterns compiled into code and strives to eliminate query language parsing at run time.
+
 The high level goals of this project are to create a database which is, simple and fast. In order to achieve these goals 
 it will be built in Rust, atop RocksDB and exist as a gRPC server.
 
