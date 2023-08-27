@@ -17,7 +17,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use prost_types::{field_descriptor_proto::Type, DescriptorProto, FieldDescriptorProto};
+use prost_types::{
+    field_descriptor_proto::{self, Type},
+    DescriptorProto, FieldDescriptorProto,
+};
 
 #[derive(Debug)]
 pub struct Property {
@@ -41,8 +44,13 @@ pub fn construct_model(
     let mut properties: Vec<Property> = vec![];
 
     for field in message.field.iter() {
+        let repeated = match field.label() {
+            field_descriptor_proto::Label::Repeated => "repeated ",
+            _ => "",
+        };
+
         properties.push(Property {
-            _type: get_usable_type(&field, &message),
+            _type: format!("{}{}", repeated, get_usable_type(&field, &message)),
             name: field.name().to_string(),
             number: field.number(),
         });

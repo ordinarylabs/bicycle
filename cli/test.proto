@@ -31,8 +31,7 @@ message Person {
     string pk = 1;
     string name = 2;
     uint32 age = 3;
-    Dog dog = 4;
-    repeated string asdf = 5;
+    repeated Dog dogs = 4;
 }
 
         
