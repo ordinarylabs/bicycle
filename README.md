@@ -1,6 +1,9 @@
 # Bicycle 🚲
 
-Bicycle 🚲 is a framework for defining database schemas whose access patterns are compiled into per-schema server binaries. We are striving to eliminate dynamic query parsing at run time. 
+> We're striving to reduce dynamic query parsing at run time.
+
+Bicycle 🚲 is a framework for defining database schemas whose access patterns are generated as code and compiled into each server binary. 
+
 
 ## Usage
 
