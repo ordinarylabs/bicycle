@@ -17,11 +17,11 @@
 
 [package]
 name = "bicycle_core"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license-file = "../LICENSE"
 authors = ["sean watters sean@watters.io"]
-description = "Core wrapper around RocksDB for the Bicycle project"
+description = "Protobuf definitions and RocksDB wrapper for the Bicycle project"
 repository = "https://github.com/ordinarylabs/bicycle"
 homepage = "https://github.com/ordinarylabs"
 
