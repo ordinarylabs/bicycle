@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 [package]
 name = "bicycle_server"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license-file = "../LICENSE"
 authors = ["sean watters sean@watters.io"]

@@ -39,4 +39,4 @@ tokio-stream = "0.1.14"
 tokio = "1.29.1"
 
 bicycle_core = { path = "./core", version = "0.1.1" }
-bicycle_server = { path = "./server", version = "0.1.0" }
+bicycle_server = { path = "./server", version = "0.1.1" }
