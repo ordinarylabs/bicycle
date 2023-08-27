@@ -18,6 +18,11 @@
 name = "bicycle_server"
 version = "0.1.0"
 edition = "2021"
+license-file = "../LICENCE"
+authors = ["sean watters sean@watters.io"]
+description = "gRPC database server for the Bicycle project"
+repository = "https://github.com/ordinarylabs/bicycle"
+homepage = "https://github.com/ordinarylabs"
 
 [dependencies]
 bicycle_core = { workspace = true }

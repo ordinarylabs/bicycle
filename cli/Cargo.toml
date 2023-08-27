@@ -19,6 +19,11 @@
 name = "bicycle_cli"
 version = "0.1.0"
 edition = "2021"
+license-file = "../LICENCE"
+authors = ["sean watters sean@watters.io"]
+description = "CLI tool for the Bicycle project"
+repository = "https://github.com/ordinarylabs/bicycle"
+homepage = "https://github.com/ordinarylabs"
 
 [dependencies]
 lazy_static = { workspace = true }
@@ -28,3 +33,5 @@ prost = { workspace = true }
 prost-types = { workspace = true }
 tonic-build = { workspace = true }
 
+bicycle_core = { workspace = true }
+bicycle_server = { workspace = true }

@@ -19,6 +19,11 @@
 name = "bicycle_core"
 version = "0.1.0"
 edition = "2021"
+license-file = "../LICENCE"
+authors = ["sean watters sean@watters.io"]
+description = "Core wrapper around RocksDB for the Bicycle project"
+repository = "https://github.com/ordinarylabs/bicycle"
+homepage = "https://github.com/ordinarylabs"
 
 [dependencies]
 lazy_static = { workspace = true }
