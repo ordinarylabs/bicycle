@@ -58,7 +58,7 @@ pub fn create(schema_path: &str) {
     }
 
     fs::remove_file(tmp_desc_path).unwrap();
-    fs::remove_file(precompile_dir.join("database.rs")).unwrap();
+    fs::remove_file(precompile_dir.join("bicycle.rs")).unwrap();
 
     gen::gen(models);
 
