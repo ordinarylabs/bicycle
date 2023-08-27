@@ -21,4 +21,5 @@ target
 out
 __bicycle__
 __precompile__
+tmp
 
