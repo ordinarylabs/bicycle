@@ -20,8 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 syntax = "proto3";
 package bicycle;
 
-// TODO: handle "repeated"
-
 message Person {
     message Dog {
         string pk = 1;
