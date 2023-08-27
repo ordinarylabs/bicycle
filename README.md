@@ -1,21 +1,33 @@
 # Bicycle 🚲
 
-Bicycle 🚲 is a framework for defining database servers, with access patterns compiled into code and strives to eliminate query language parsing at run time.
-
-The high level goals of this project are to create a database which is, simple and fast. In order to achieve these goals 
-it will be built in Rust, atop RocksDB and exist as a gRPC server.
-
-For more information and a better writeup, look here: https://problemchild.engineering/2023-08-19-the-database
-
-For some really imprecise (just run on my local with [ghz](https://ghz.sh)), initial benchmarks you can also look here: https://hachyderm.io/@seanwatters/110948629015247923 
+Bicycle 🚲 is a framework for defining database schemas whose access patterns are compiled into per-schema server binaries. We are striving to eliminate dynamic query parsing at run time. 
 
 ## Usage
 
-Usage is super clunky rn bc this lib only has one consumer (me). But if you're interested in trying it,
-run the following:
+A Bicycle schema is defined in a simple `.proto` file like so:
+
+```proto
+// schema.proto
+syntax = "proto3";
+package bicycle;
+
+message Dog {
+  string pk = 1;
+
+  string name = 2;
+  uint32 age = 3;
+  string breed = 4;
+}
+```
+
+We don't distribute the binary yet but if you clone down this repository you can play around with it:
 
 ```bash
-cargo run --package bicycle_cli -- create cli/test.proto
+## clone
+git clone git@github.com:ordinarylabs/bicycle.git && cd bicycle
+
+## generate your `./out/server` and `./out/bicycle.proto`
+cargo run --package bicycle_cli -- create path/to/your/schema.proto
 ```
 
 That will create a server binary and proto file for your consuming services. So in the `cli/out/` you'll have `server` and `bicycle.proto`.
@@ -35,50 +47,7 @@ other Rustacean magic to make it stop), you should be able to run the server wit
 
 ## Clients
 
-```bash
-./out/bicycle.proto
-```
-
-Because the database server is just a gRPC server, you can use all native gRPC libraries for any language you like.
-and you can also roll over to your preferred gRPC GUI client, type in `localhost::50051`, _AND_ because we implement
-server reflection, when you plug in the URL it will automatically load up all your available RPCs (assuming your client GUI supports that).
-
-## Example
-
-> from blog post
-
-The simplest example here (because right now it's "just a kv store" and I'm not gonna explain STD to everyone rn) is just 1 model,
-so we're gonna pick `Dog`.
-
-### Schema
-
-```proto
-// cli/test.proto
-syntax = "proto3";
-package bicycle;
-
-message Dog {
-  string pk = 1;
-
-  string name = 2;
-  uint32 age = 3;
-  string breed = 4;
-}
-```
-
-If we run our above commands to generate the `./out/server` and `./out/bicycle.proto` we can get the actually useful proto definition for our client (`./out/bicycle.proto`):
-
-
-```bash
-cargo run --package bicycle_cli -- create cli/test.proto
-```
-
-## Proto
-
-When we run our script with the `schema.proto`, it barfs out this new proto (`bicycle.proto`). In this new proto, are the actual primitives for database
-interaction and has all the fun stuff we need to do in application-land. 
-
-This file shouldn't ever need to be modified by the developer directly and could break a lotta stuff. 
+When you run the `create` command, it will take in your `schema.proto` and produce an `./out/bicycle.proto` that looks something like this:
 
 ```proto
 syntax = "proto3";
@@ -113,9 +82,11 @@ service Bicycle {
 }
 ```
 
-## Client
+Because the database server is just a gRPC server, you can use all native gRPC libraries for any language you like.
+and you can also roll over to your preferred gRPC GUI client, type in `localhost::50051`, _AND_ because we implement
+server reflection, when you plug in the URL it will automatically load up all your available RPCs (assuming your client GUI supports that).
 
-I was gonna put together a full on code example for every language but that's exhausting and `grpcurl` gives you the idea.
+## Example
 
 Basically we have 4 RPCs for each model:
 
