@@ -144,6 +144,8 @@ dependencies = [
 name = "bicycle_cli"
 version = "0.1.0"
 dependencies = [
+ "bicycle_core",
+ "bicycle_server",
  "heck",
  "lazy_static",
  "prost",
