@@ -17,12 +17,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// !! every plugin's `lib.rs` must start with the next 3 lines
 #[allow(non_snake_case)]
 mod proto;
-pub use proto::plugin_server::PluginServer;
-use proto::{plugin_server::Plugin, Echo};
-
 use tonic::{Request, Response, Status};
+
+use proto::plugin_server::PluginServer;
+use proto::{plugin_server::Plugin, Echo};
 
 pub struct PluginService {}
 

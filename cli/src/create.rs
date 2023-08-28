@@ -60,7 +60,7 @@ pub fn create(schema_path: &str, plugins: Vec<String>) {
     fs::remove_file(tmp_desc_path).unwrap();
     fs::remove_file(precompile_dir.join("bicycle.rs")).unwrap();
 
-    gen::gen(models);
+    gen::gen(models, plugins);
 
     if let Err(err) = env::set_current_dir(PRECOMPILE_DIR) {
         eprintln!("Failed to change directory: {}", err);
@@ -86,5 +86,5 @@ pub fn create(schema_path: &str, plugins: Vec<String>) {
         .output()
         .unwrap();
 
-    // fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
+    fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
 }

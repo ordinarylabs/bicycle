@@ -21,7 +21,7 @@ use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
 
-use heck::{ToShoutySnakeCase, ToSnakeCase};
+use heck::{ToPascalCase, ToShoutySnakeCase, ToSnakeCase};
 use lazy_static::lazy_static;
 
 use crate::{utils::Model, PRECOMPILE_DIR};
@@ -90,7 +90,7 @@ fn write_file(path: &str, content: &str) {
     file.write_all(content.as_bytes()).unwrap();
 }
 
-pub(crate) fn gen(models: Vec<Model>) {
+pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
     let sanitized_workspace_cargo_toml = WORKSPACE_CARGO_TOML.replace("\"cli\", ", "");
     write_file("Cargo.toml", &sanitized_workspace_cargo_toml);
 
@@ -152,14 +152,65 @@ pub(crate) fn gen(models: Vec<Model>) {
         );
     }
 
-    let proto = CORE_DATABASE_PROTO
+    let mut proto = CORE_DATABASE_PROTO
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
+
+    let mut plugin_libs = "".to_string();
+    let mut plugin_services = "".to_string();
+
+    for plugin in plugins {
+        let proto_path = format!("{}/{}.proto", plugin, plugin);
+        let lib_path = format!("{}/src/lib.rs", plugin);
+
+        match fs::read_to_string(&proto_path) {
+            Ok(plugin_proto) => {
+                let lines: Vec<&str> = plugin_proto
+                    .lines()
+                    .filter(|&line| {
+                        !line.trim().starts_with("package") && !line.trim().starts_with("syntax")
+                    })
+                    .collect();
+
+                proto = format!("{}\n{}", proto, lines.join("\n"));
+            }
+            Err(_) => println!("no proto found at {}", proto_path),
+        }
+
+        match fs::read_to_string(&lib_path) {
+            Ok(plugin_proto) => {
+                let lines: Vec<&str> = plugin_proto
+                    .lines()
+                    .filter(|&line| {
+                        !line.trim().starts_with("#[allow(non_snake_case)]")
+                            && !line.trim().starts_with("mod proto;")
+                            && !line
+                                .trim()
+                                .starts_with("use tonic::{Request, Response, Status};")
+                            && !line.trim().starts_with("//")
+                    })
+                    .collect();
+
+                plugin_libs = format!("{}\n{}", plugin_libs, lines.join("\n"));
+            }
+            Err(_) => println!("no lib.rs found at {}", lib_path),
+        }
+
+        plugin_services = format!(
+            "{}.add_service({}Server::new({}Service {{}}))\n        ",
+            plugin_services,
+            plugin.to_pascal_case(),
+            plugin.to_pascal_case(),
+        )
+    }
 
     write_file("core/bicycle.proto", &proto);
     write_file("core/src/models/mod.rs", &core_models_mod_rs);
 
-    let main_rs = SERVER_SRC_MAIN_RS.replace(&SERVER_HANDLERS.to_string(), &server_handlers_block);
+    let main_rs = SERVER_SRC_MAIN_RS
+        .replace("// ##PLUGIN_LIBS##", &plugin_libs)
+        .replace(&SERVER_HANDLERS.to_string(), &server_handlers_block)
+        .replace("// ##PLUGIN_SERVICES##", &plugin_services);
     write_file("server/src/main.rs", &main_rs);
 }
 

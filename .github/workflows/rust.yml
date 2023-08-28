@@ -16,17 +16,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: arduino/setup-protoc@v2
+
+    ## TODO: this should only be to build the database with a fully featured
+    ## TODO: protobuf file schema, run the server, and test all of the individual
+    ## TODO: endpoints, and monitor performance characteristics with changes.
     - name: Build Bicycle
       run: cargo build --verbose
-    # TODO: add back when tests and benches are present
-    # - name: Test Bicycle
-    #   run: cargo test --verbose
-    # - name: Benchmark Bicycle
-    #   run: cargo bench --verbose
     - name: Build Plugin
       run: cd ./plugin && cargo build --verbose
     
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-  

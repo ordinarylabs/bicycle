@@ -24,6 +24,6 @@ fn main() {
 
     tonic_build::configure()
         .file_descriptor_set_path(precompile_dir.join("bicycle_descriptor.bin"))
-        .compile(&["bicycle.proto"], &["."])
+        .compile(&["bicycle.proto"], &["proto"])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 }
