@@ -27,7 +27,7 @@ use prost_types::FileDescriptorSet;
 use crate::utils::construct_model;
 use crate::{gen, utils::Model, PRECOMPILE_DIR};
 
-pub fn create(schema_path: &str) {
+pub fn create(schema_path: &str, plugins: Vec<String>) {
     if Path::new(PRECOMPILE_DIR).exists() {
         fs::remove_dir_all(PRECOMPILE_DIR).unwrap();
     }
@@ -86,5 +86,5 @@ pub fn create(schema_path: &str) {
         .output()
         .unwrap();
 
-    fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
+    // fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
 }

@@ -19,7 +19,7 @@
 name = "bicycle_core"
 version = "0.1.1"
 edition = "2021"
-license-file = "../LICENSE"
+license = "AGPL-3.0"
 authors = ["sean watters sean@watters.io"]
 description = "Protobuf definitions and RocksDB wrapper for the Bicycle project"
 repository = "https://github.com/ordinarylabs/bicycle"

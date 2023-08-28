@@ -17,13 +17,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::{env, path::PathBuf};
+syntax = "proto3";
+package plugin;
 
-fn main() {
-    let precompile_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+message Echo {
+  string hiya_buddy = 1;
+}
 
-    tonic_build::configure()
-        .file_descriptor_set_path(precompile_dir.join("bicycle_descriptor.bin"))
-        .compile(&["bicycle.proto"], &["."])
-        .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
+service Plugin {
+  rpc PluginEcho(Echo) returns (Echo) {}
 }

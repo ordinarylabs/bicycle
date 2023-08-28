@@ -14,33 +14,23 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 [package]
-name = "bicycle_server"
-version = "0.1.1"
+name = "bicycle_plugin"
+version = "0.1.0"
 edition = "2021"
 license = "AGPL-3.0"
 authors = ["sean watters sean@watters.io"]
-description = "gRPC database server for the Bicycle project"
+description = "Protobuf definitions and RocksDB wrapper for the Bicycle project"
 repository = "https://github.com/ordinarylabs/bicycle"
 homepage = "https://github.com/ordinarylabs"
 
 [dependencies]
-bicycle_core = { workspace = true }
-
-prost = { workspace = true }
-
-tonic = { workspace = true }
-tonic-reflection = { workspace = true }
-
 lazy_static = { workspace = true }
 
-tokio-stream = { workspace = true }
-tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
+tonic = { workspace = true }
+prost = { workspace = true }
+rocksdb = { workspace = true }
 
-jemallocator = "0.5.0"
-parking_lot = "0.12.1"
-chrono = "0.4.9"
-bcrypt = "0.14.0"
-jsonwebtoken = "8.3.0"
-
-serde = { version = "1.0", features = ["derive"] }
+[build-dependencies]
+tonic-build = { workspace = true }

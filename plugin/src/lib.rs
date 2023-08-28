@@ -17,13 +17,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::{env, path::PathBuf};
+#[allow(non_snake_case)]
+mod proto;
+pub use proto::plugin_server::PluginServer;
+use proto::{plugin_server::Plugin, Echo};
 
-fn main() {
-    let precompile_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+use tonic::{Request, Response, Status};
 
-    tonic_build::configure()
-        .file_descriptor_set_path(precompile_dir.join("bicycle_descriptor.bin"))
-        .compile(&["bicycle.proto"], &["."])
-        .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
+pub struct PluginService {}
+
+#[tonic::async_trait]
+impl Plugin for PluginService {
+    async fn plugin_echo(&self, req: Request<Echo>) -> Result<Response<Echo>, Status> {
+        Ok(Response::new(req.into_inner()))
+    }
 }

@@ -35,7 +35,6 @@ const CORE_SRC_LIB_RS: &'static str = include_str!("../../core/src/lib.rs");
 const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!("../../core/src/models/example.rs");
 
 const SERVER_CARGO_TOML: &'static str = include_str!("../../server/Cargo.toml");
-const SERVER_SRC_BICYCLE_RS: &'static str = include_str!("../../server/src/bicycle.rs");
 const SERVER_SRC_MAIN_RS: &'static str = include_str!("../../server/src/main.rs");
 
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
@@ -69,7 +68,7 @@ lazy_static! {
         Some("##MODEL_RPCS_END##"),
     );
     static ref SERVER_HANDLERS: String = get_between(
-        SERVER_SRC_BICYCLE_RS,
+        SERVER_SRC_MAIN_RS,
         "##START_HANDLERS##",
         Some("##END_HANDLERS##")
     );
@@ -160,12 +159,8 @@ pub(crate) fn gen(models: Vec<Model>) {
     write_file("core/bicycle.proto", &proto);
     write_file("core/src/models/mod.rs", &core_models_mod_rs);
 
-    write_file("server/src/main.rs", &SERVER_SRC_MAIN_RS);
-
-    let bicycle_rs =
-        SERVER_SRC_BICYCLE_RS.replace(&SERVER_HANDLERS.to_string(), &server_handlers_block);
-
-    write_file("server/src/bicycle.rs", &bicycle_rs);
+    let main_rs = SERVER_SRC_MAIN_RS.replace(&SERVER_HANDLERS.to_string(), &server_handlers_block);
+    write_file("server/src/main.rs", &main_rs);
 }
 
 fn gen_proto(model: &Model) -> (String, String) {

@@ -35,8 +35,19 @@ fn main() {
     let command = &args[1];
     let schema_path = &args[2];
 
+    let mut plugins: Vec<String> = vec![];
+
+    if args.len() == 5 && args[3].to_string() == "--plugins".to_string() {
+        let plugins_str = &args[4];
+        let plugins_string = plugins_str.to_string();
+
+        for plugin in plugins_string.split(',').into_iter() {
+            plugins.push(plugin.to_string());
+        }
+    }
+
     match command.as_str() {
-        "create" => create::create(schema_path),
+        "create" => create::create(schema_path, plugins),
         _ => panic!("invalid command"),
     }
 }
