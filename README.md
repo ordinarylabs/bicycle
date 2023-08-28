@@ -45,14 +45,11 @@ cargo run --package bicycle_cli -- create path/to/your/schema.proto
 
 That will create a server binary and proto file for your consuming services. So in the `cli/out/` you'll have `server` and `bicycle.proto`.
 
-The `bicycle.proto` is what any developer who is familiar with gRPC can use to code-gen and build a client to the database. Right now, the database
-is _very_ light weight and has _no_ administration infrastructure, permissions or auth; I get away with this because I'm only ever running it in private
-subnets within the same VPCs on AWS and stuff. But there is always room for evolution. 
+Now, the `bicycle.proto` can be used to codegen the client in any language. 
 
 ## Running
 
-Once RocksDB is finally done building (holy fuck that takes way too long and I need to figure out how to like cache it or some do some 
-other Rustacean magic to make it stop), you should be able to run the server with:
+Once RocksDB is finally done building, you should be able to run the server with:
 
 ```bash
 ./out/server
