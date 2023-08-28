@@ -15,22 +15,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+[workspace]
+
 [package]
 name = "bicycle_plugin"
 version = "0.1.0"
 edition = "2021"
 license = "AGPL-3.0"
 authors = ["sean watters sean@watters.io"]
-description = "Protobuf definitions and RocksDB wrapper for the Bicycle project"
+description = "Plugin example for the Bicycle project"
 repository = "https://github.com/ordinarylabs/bicycle"
 homepage = "https://github.com/ordinarylabs"
 
 [dependencies]
-lazy_static = { workspace = true }
-
-tonic = { workspace = true }
-prost = { workspace = true }
-rocksdb = { workspace = true }
+tonic = "0.9.2"
+prost = "0.11.9"
 
 [build-dependencies]
-tonic-build = { workspace = true }
+tonic-build = "0.9.2"
