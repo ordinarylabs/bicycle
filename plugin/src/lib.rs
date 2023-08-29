@@ -26,6 +26,7 @@ use tonic::{Request, Response, Status};
 pub use proto::plugin_server::PluginServer;
 use proto::{plugin_server::Plugin, Echo};
 
+// !! must be named `XyzService` where `Xyz` is the PascalCase name of your plugin
 pub struct PluginService {}
 
 #[tonic::async_trait]
