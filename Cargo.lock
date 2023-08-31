@@ -151,7 +151,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_cli"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "heck",
  "lazy_static",
@@ -162,7 +162,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "lazy_static",
  "prost",
@@ -173,7 +173,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_server"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "bcrypt",
  "bicycle_core",

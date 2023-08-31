@@ -17,7 +17,7 @@
 
 [package]
 name = "bicycle_cli"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 license = "AGPL-3.0"
 authors = ["sean watters sean@watters.io"]
