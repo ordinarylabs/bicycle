@@ -29,7 +29,7 @@ include = ["../core", "../server"]
 
 [[bin]]
 name = "bicycle"
-path = "src/main.rs"
+path = "./src/main.rs"
 
 [dependencies]
 lazy_static = { workspace = true }
