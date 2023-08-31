@@ -151,7 +151,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "heck",
  "lazy_static",
