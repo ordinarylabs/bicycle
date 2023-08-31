@@ -1,5 +1,7 @@
 # Bicycle 🚲
 
+[![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
+
 Bicycle 🚲 is a framework for defining database schemas whose access patterns are generated as code and compiled into each server binary. 
 
 We're striving to reduce dynamic query parsing at run time.

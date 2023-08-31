@@ -25,6 +25,7 @@ description = "CLI tool for the Bicycle project"
 repository = "https://github.com/ordinarylabs/bicycle"
 homepage = "https://github.com/ordinarylabs"
 readme = "../README.md"
+include = ["../core", "../server"]
 
 [dependencies]
 lazy_static = { workspace = true }
