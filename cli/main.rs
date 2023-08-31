@@ -17,37 +17,37 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// use std::env;
+use std::env;
 
-// mod create;
-// mod gen;
-// mod utils;
+mod create;
+mod gen;
+mod utils;
 
-// pub(crate) const PRECOMPILE_DIR: &'static str = "./__precompile__";
+pub(crate) const PRECOMPILE_DIR: &'static str = "./__precompile__";
 
 fn main() {
-    // let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
-    // if args.len() < 3 {
-    //     panic!("Not enough arguments");
-    // }
+    if args.len() < 3 {
+        panic!("Not enough arguments");
+    }
 
-    // let command = &args[1];
-    // let schema_path = &args[2];
+    let command = &args[1];
+    let schema_path = &args[2];
 
-    // let mut plugins: Vec<String> = vec![];
+    let mut plugins: Vec<String> = vec![];
 
-    // if args.len() == 5 && args[3].to_string() == "--plugins".to_string() {
-    //     let plugins_str = &args[4];
-    //     let plugins_string = plugins_str.to_string();
+    if args.len() == 5 && args[3].to_string() == "--plugins".to_string() {
+        let plugins_str = &args[4];
+        let plugins_string = plugins_str.to_string();
 
-    //     for plugin in plugins_string.split(',').into_iter() {
-    //         plugins.push(plugin.to_string());
-    //     }
-    // }
+        for plugin in plugins_string.split(',').into_iter() {
+            plugins.push(plugin.to_string());
+        }
+    }
 
-    // match command.as_str() {
-    //     "create" => create::create(schema_path, plugins),
-    //     _ => panic!("invalid command"),
-    // }
+    match command.as_str() {
+        "create" => create::create(schema_path, plugins),
+        _ => panic!("invalid command"),
+    }
 }
