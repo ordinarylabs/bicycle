@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [workspace]
-members = ["cli", "core", "server"]
+members = ["core", "server"]
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
@@ -40,3 +40,27 @@ tokio = "1.29.1"
 
 bicycle_core = { path = "./core", version = "0.1.2" }
 bicycle_server = { path = "./server", version = "0.1.2" }
+
+[package]
+name = "bicycle"
+version = "0.1.2"
+edition = "2021"
+license = "AGPL-3.0"
+authors = ["sean watters sean@watters.io"]
+description = "CLI tool for the Bicycle project"
+repository = "https://github.com/ordinarylabs/bicycle"
+homepage = "https://github.com/ordinarylabs"
+readme = "../README.md"
+include = ["./core", "./server", "./Cargo.toml"]
+
+[[bin]]
+name = "bicycle"
+path = "src/main.rs"
+
+[dependencies]
+lazy_static = { workspace = true }
+heck = { workspace = true }
+
+prost = { workspace = true }
+prost-types = { workspace = true }
+tonic-build = { workspace = true }

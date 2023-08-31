@@ -26,16 +26,16 @@ use lazy_static::lazy_static;
 
 use crate::{utils::Model, PRECOMPILE_DIR};
 
-const WORKSPACE_CARGO_TOML: &'static str = include_str!("../../Cargo.toml");
+const WORKSPACE_CARGO_TOML: &'static str = include_str!("../Cargo.toml");
 
-const CORE_BUILD_RS: &'static str = include_str!("../../core/build.rs");
-const CORE_CARGO_TOML: &'static str = include_str!("../../core/Cargo.toml");
-const CORE_DATABASE_PROTO: &'static str = include_str!("../../core/bicycle.proto");
-const CORE_SRC_LIB_RS: &'static str = include_str!("../../core/src/lib.rs");
-const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!("../../core/src/models/example.rs");
+const CORE_BUILD_RS: &'static str = include_str!("../core/build.rs");
+const CORE_CARGO_TOML: &'static str = include_str!("../core/Cargo.toml");
+const CORE_DATABASE_PROTO: &'static str = include_str!("../core/bicycle.proto");
+const CORE_SRC_LIB_RS: &'static str = include_str!("../core/src/lib.rs");
+const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!("../core/src/models/example.rs");
 
-const SERVER_CARGO_TOML: &'static str = include_str!("../../server/Cargo.toml");
-const SERVER_SRC_MAIN_RS: &'static str = include_str!("../../server/src/main.rs");
+const SERVER_CARGO_TOML: &'static str = include_str!("../server/Cargo.toml");
+const SERVER_SRC_MAIN_RS: &'static str = include_str!("../server/src/main.rs");
 
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
     let start = match content.find(from) {
