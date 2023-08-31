@@ -17,19 +17,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-syntax = "proto3";
-package bicycle;
-
-message Person {
-    message Dog {
-        string pk = 1;
-        string breed = 2;
-    }
-
-    string pk = 1;
-    string name = 2;
-    uint32 age = 3;
-    repeated Dog dogs = 4;
+fn main() {
+    tonic_build::configure()
+        .compile(&["plugin.proto"], &["."])
+        .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 }
-
-        

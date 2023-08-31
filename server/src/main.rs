@@ -18,17 +18,75 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 use tonic::transport::Server;
+use tonic::{Request, Response, Status};
 
-use bicycle_core::proto;
+use bicycle_core::{models, proto};
 
 use proto::bicycle_server::BicycleServer;
 use proto::FILE_DESCRIPTOR_SET;
 
-mod bicycle;
-use bicycle::BicycleService;
+use proto::bicycle_server::Bicycle;
+use proto::{Empty, IndexQuery};
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
+// ##PLUGIN_LIBS##
+
+pub struct BicycleService {}
+
+#[tonic::async_trait]
+impl Bicycle for BicycleService {
+    // ##START_HANDLERS##
+    async fn get_examples_by_pk(
+        &self,
+        req: Request<IndexQuery>,
+    ) -> Result<Response<proto::Examples>, Status> {
+        match models::example::get_examples_by_pk(req.into_inner()) {
+            Ok(items) => Ok(Response::new(items)),
+            Err(err) => {
+                let msg = format!("failed to GET 'Examples': {}", err.to_string());
+                Err(Status::internal(msg))
+            }
+        }
+    }
+
+    async fn delete_examples_by_pk(
+        &self,
+        req: Request<IndexQuery>,
+    ) -> Result<Response<Empty>, Status> {
+        match models::example::delete_examples_by_pk(req.into_inner()) {
+            Ok(_) => Ok(Response::new(Empty {})),
+            Err(err) => {
+                let msg = format!("failed to DELETE 'Examples': {}", err.to_string());
+                Err(Status::internal(msg))
+            }
+        }
+    }
+
+    async fn put_example(&self, req: Request<proto::Example>) -> Result<Response<Empty>, Status> {
+        if let Err(err) = models::example::put_example(req.into_inner()) {
+            let msg = format!("failed to PUT 'Example': {}", err.to_string());
+
+            return Err(Status::internal(msg));
+        }
+
+        Ok(Response::new(Empty {}))
+    }
+
+    async fn batch_put_examples(
+        &self,
+        req: Request<proto::Examples>,
+    ) -> Result<Response<Empty>, Status> {
+        if let Err(err) = models::example::batch_put_examples(req.into_inner()) {
+            let msg = format!("failed to BATCH PUT 'Examples': {}", err.to_string());
+
+            return Err(Status::internal(msg));
+        }
+
+        Ok(Response::new(Empty {}))
+    }
+    // ##END_HANDLERS##
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -39,16 +97,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .unwrap();
 
-    let bicycle_service = BicycleService {};
-
     println!("Bicycle Server 🚲 listening at: {}", addr);
 
     // TODO: add tracing and logs (`tracing` crate and `tower` middleware for logging)
     // TODO: make all instrumentation OTel compatible
 
     Server::builder()
+        // ##PLUGIN_SERVICES##
+        .add_service(BicycleServer::new(BicycleService {}))
         .add_service(reflection_service)
-        .add_service(BicycleServer::new(bicycle_service))
         .serve(addr)
         .await?;
 

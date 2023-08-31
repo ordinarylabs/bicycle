@@ -17,26 +17,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::env;
+// !! every plugin's `lib.rs` must start with the next 3 lines
+#[allow(non_snake_case)]
+mod proto;
+use tonic::{Request, Response, Status};
 
-mod create;
-mod gen;
-mod utils;
+// !! exported for use in the server
+pub use proto::plugin_server::PluginServer;
+use proto::{plugin_server::Plugin, Echo};
 
-pub(crate) const PRECOMPILE_DIR: &'static str = "./__precompile__";
+// !! must be named `XyzService` where `Xyz` is the PascalCase name of your plugin
+pub struct PluginService {}
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    if args.len() < 3 {
-        panic!("Not enough arguments");
-    }
-
-    let command = &args[1];
-    let schema_path = &args[2];
-
-    match command.as_str() {
-        "create" => create::create(schema_path),
-        _ => panic!("invalid command"),
+#[tonic::async_trait]
+impl Plugin for PluginService {
+    async fn plugin_echo(&self, req: Request<Echo>) -> Result<Response<Echo>, Status> {
+        Ok(Response::new(req.into_inner()))
     }
 }

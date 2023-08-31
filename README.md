@@ -1,5 +1,7 @@
 # Bicycle 🚲
 
+[![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
+
 Bicycle 🚲 is a framework for defining database schemas whose access patterns are generated as code and compiled into each server binary. 
 
 We're striving to reduce dynamic query parsing at run time.
@@ -40,10 +42,12 @@ We don't distribute the binary yet but if you clone down this repository you can
 git clone git@github.com:ordinarylabs/bicycle.git && cd bicycle
 
 ## generate your `./out/server` and `./out/bicycle.proto`
-cargo run --package bicycle_cli -- create path/to/your/schema.proto
+cargo run -- create schema.proto
+
+## (feel free to edit the `schema.proto`, locally, as your "playground")
 ```
 
-That will create a server binary and proto file for your consuming services. So in the `cli/out/` you'll have `server` and `bicycle.proto`.
+That will create a server binary and proto file for your consuming services. So in the `out/` you'll have `server` and `bicycle.proto`.
 
 Now, the `bicycle.proto` can be used to codegen the client in any language. 
 
