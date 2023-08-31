@@ -27,6 +27,10 @@ homepage = "https://github.com/ordinarylabs"
 readme = "README.md"
 include = ["/src", "/core", "/server"]
 
+[[bin]]
+name = "bicycle"
+path = "cli/main.rs"
+
 [dependencies]
 lazy_static = { workspace = true }
 heck = "0.4.1"

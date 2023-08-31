@@ -17,9 +17,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
-use std::{env, fs};
+use std::{env, fs, fs::File};
 
 use prost::Message;
 use prost_types::FileDescriptorSet;
@@ -67,8 +68,23 @@ pub fn create(schema_path: &str, plugins: Vec<String>) {
         exit(1);
     }
 
+    if !Path::new("cli").exists() {
+        fs::create_dir("cli").unwrap();
+
+        let code = r#"
+            fn main() {
+                println!("tmp");
+            }
+        "#;
+
+        let path = Path::new("cli").join("main.rs");
+
+        let mut file = File::create(path).unwrap();
+        file.write_all(code.as_bytes()).unwrap();
+    }
+
     Command::new("cargo")
-        .args(["build", "--release"])
+        .args(["build", "--release", "-p", "bicycle_server"])
         .output()
         .unwrap();
 
