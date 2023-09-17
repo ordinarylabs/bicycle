@@ -32,17 +32,11 @@ const MODEL_NAME: &'static str = "EXAMPLE";
 pub fn get_examples_by_pk(query: IndexQuery) -> Result<Vec<proto::Example>, tonic::Status> {
     if let Some(expression) = query.expression {
         match expression {
-            Expression::Eq(val) => {
-                return get_eq::<proto::Example>(format!("{}#{}", MODEL_NAME, val))
-            }
-            Expression::Gte(val) => {
-                return get_gte::<proto::Example>(format!("{}#{}", MODEL_NAME, val))
-            }
-            Expression::Lte(val) => {
-                return get_lte::<proto::Example>(format!("{}#{}", MODEL_NAME, val))
-            }
+            Expression::Eq(val) => return get_eq::<proto::Example>(MODEL_NAME, val),
+            Expression::Gte(val) => return get_gte::<proto::Example>(MODEL_NAME, val),
+            Expression::Lte(val) => return get_lte::<proto::Example>(MODEL_NAME, val),
             Expression::BeginsWith(val) => {
-                return get_begins_with::<proto::Example>(format!("{}#{}", MODEL_NAME, val))
+                return get_begins_with::<proto::Example>(MODEL_NAME, val)
             }
         }
     }
@@ -53,12 +47,10 @@ pub fn get_examples_by_pk(query: IndexQuery) -> Result<Vec<proto::Example>, toni
 pub fn delete_examples_by_pk(query: IndexQuery) -> Result<(), tonic::Status> {
     if let Some(expression) = query.expression {
         match expression {
-            Expression::Eq(val) => return delete_eq(format!("{}#{}", MODEL_NAME, val)),
-            Expression::Gte(val) => return delete_gte(format!("{}#{}", MODEL_NAME, val)),
-            Expression::Lte(val) => return delete_lte(format!("{}#{}", MODEL_NAME, val)),
-            Expression::BeginsWith(val) => {
-                return delete_begins_with(format!("{}#{}", MODEL_NAME, val))
-            }
+            Expression::Eq(val) => return delete_eq(MODEL_NAME, val),
+            Expression::Gte(val) => return delete_gte(MODEL_NAME, val),
+            Expression::Lte(val) => return delete_lte(MODEL_NAME, val),
+            Expression::BeginsWith(val) => return delete_begins_with(MODEL_NAME, val),
         }
     }
 
@@ -66,21 +58,15 @@ pub fn delete_examples_by_pk(query: IndexQuery) -> Result<(), tonic::Status> {
 }
 
 pub fn put_example(example: proto::Example) -> Result<(), tonic::Status> {
-    put(
-        format!("{}#{}", MODEL_NAME, example.pk.clone()),
-        example.encode_to_vec(),
-    )
+    put(MODEL_NAME, example.pk.clone(), example.encode_to_vec())
 }
 
 pub fn batch_put_examples(examples: proto::Examples) -> Result<(), tonic::Status> {
     let mut params = vec![];
 
     for example in examples.examples {
-        params.push((
-            format!("{}#{}", MODEL_NAME, example.pk.clone()),
-            example.encode_to_vec(),
-        ));
+        params.push((example.pk.clone(), example.encode_to_vec()));
     }
 
-    batch_put(params)
+    batch_put(MODEL_NAME, params)
 }

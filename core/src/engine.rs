@@ -16,6 +16,7 @@ lazy_static! {
 // HELPERS
 
 fn handle_get_itr<'a, D, T>(
+    model: &'static str,
     itr: &mut DBIteratorWithThreadMode<'a, D>,
 ) -> Result<Vec<T>, tonic::Status>
 where
@@ -24,16 +25,27 @@ where
 {
     let mut items = vec![];
 
-    while let Some(Ok((_, v))) = itr.next() {
-        if let Ok(item) = prost::Message::decode(&*v) {
-            items.push(item);
+    while let Some(Ok((k, v))) = itr.next() {
+        if let Ok(key) = from_utf8(&*k) {
+            if key.starts_with(&format!("{}#", model)) {
+                if let Ok(item) = prost::Message::decode(&*v) {
+                    items.push(item);
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
     }
 
     Ok(items)
 }
 
-fn handle_delete_itr<'a, D>(itr: &mut DBIteratorWithThreadMode<'a, D>) -> Result<(), tonic::Status>
+fn handle_delete_itr<'a, D>(
+    model: &'static str,
+    itr: &mut DBIteratorWithThreadMode<'a, D>,
+) -> Result<(), tonic::Status>
 where
     D: DBAccess,
 {
@@ -41,7 +53,11 @@ where
 
     while let Some(Ok((k, ..))) = itr.next() {
         if let Ok(key) = from_utf8(&*k) {
-            batch.delete(key);
+            if key.starts_with(&format!("{}#", model)) {
+                batch.delete(key);
+            } else {
+                break;
+            }
         }
     }
 
@@ -53,18 +69,18 @@ where
 
 // PUT
 
-pub fn put(k: String, v: Vec<u8>) -> Result<(), tonic::Status> {
-    match ROCKSDB.put(k.as_bytes(), v) {
+pub fn put(model: &'static str, k: String, v: Vec<u8>) -> Result<(), tonic::Status> {
+    match ROCKSDB.put(format!("{}#{}", model, k).as_bytes(), v) {
         Ok(_) => Ok(()),
         Err(err) => Err(tonic::Status::aborted(err.to_string())),
     }
 }
 
-pub fn batch_put(params: Vec<(String, Vec<u8>)>) -> Result<(), tonic::Status> {
+pub fn batch_put(model: &'static str, params: Vec<(String, Vec<u8>)>) -> Result<(), tonic::Status> {
     let mut batch = WriteBatch::default();
 
     for (k, v) in params {
-        batch.put(k.as_bytes(), v);
+        batch.put(format!("{}#{}", model, k).as_bytes(), v);
     }
 
     match ROCKSDB.write(batch) {
@@ -75,11 +91,11 @@ pub fn batch_put(params: Vec<(String, Vec<u8>)>) -> Result<(), tonic::Status> {
 
 // GET
 
-pub fn get_eq<T>(val: String) -> Result<Vec<T>, tonic::Status>
+pub fn get_eq<T>(model: &'static str, val: String) -> Result<Vec<T>, tonic::Status>
 where
     T: prost::Message + Default,
 {
-    match ROCKSDB.get(val.as_bytes()) {
+    match ROCKSDB.get(format!("{}#{}", model, val).as_bytes()) {
         Ok(res) => {
             if let Some(res) = res {
                 match prost::Message::decode(&res[..]) {
@@ -94,28 +110,36 @@ where
     }
 }
 
-pub fn get_gte<T>(val: String) -> Result<Vec<T>, tonic::Status>
+pub fn get_gte<T>(model: &'static str, val: String) -> Result<Vec<T>, tonic::Status>
 where
     T: prost::Message + Default,
 {
-    let mut itr = ROCKSDB.iterator(IteratorMode::From(val.as_bytes(), Direction::Forward));
+    let mut itr = ROCKSDB.iterator(IteratorMode::From(
+        format!("{}#{}", model, val).as_bytes(),
+        Direction::Forward,
+    ));
 
-    handle_get_itr(&mut itr)
+    handle_get_itr(model, &mut itr)
 }
 
-pub fn get_lte<T>(val: String) -> Result<Vec<T>, tonic::Status>
+pub fn get_lte<T>(model: &'static str, val: String) -> Result<Vec<T>, tonic::Status>
 where
     T: prost::Message + Default,
 {
-    let mut itr = ROCKSDB.iterator(IteratorMode::From(val.as_bytes(), Direction::Reverse));
+    let mut itr = ROCKSDB.iterator(IteratorMode::From(
+        format!("{}#{}", model, val).as_bytes(),
+        Direction::Reverse,
+    ));
 
-    handle_get_itr(&mut itr)
+    handle_get_itr(model, &mut itr)
 }
 
-pub fn get_begins_with<T>(val: String) -> Result<Vec<T>, tonic::Status>
+pub fn get_begins_with<T>(model: &'static str, val: String) -> Result<Vec<T>, tonic::Status>
 where
     T: prost::Message + Default,
 {
+    let val = format!("{}#{}", model, val);
+
     let mut itr = ROCKSDB.iterator(IteratorMode::From(val.as_bytes(), Direction::Forward));
 
     let mut items = vec![];
@@ -137,26 +161,34 @@ where
 
 // DELETE
 
-pub fn delete_eq(val: String) -> Result<(), tonic::Status> {
-    match ROCKSDB.delete(val.as_bytes()) {
+pub fn delete_eq(model: &'static str, val: String) -> Result<(), tonic::Status> {
+    match ROCKSDB.delete(format!("{}#{}", model, val).as_bytes()) {
         Ok(_) => Ok(()),
         Err(err) => Err(tonic::Status::aborted(err.to_string())),
     }
 }
 
-pub fn delete_gte(val: String) -> Result<(), tonic::Status> {
-    let mut itr = ROCKSDB.iterator(IteratorMode::From(val.as_bytes(), Direction::Forward));
+pub fn delete_gte(model: &'static str, val: String) -> Result<(), tonic::Status> {
+    let mut itr = ROCKSDB.iterator(IteratorMode::From(
+        format!("{}#{}", model, val).as_bytes(),
+        Direction::Forward,
+    ));
 
-    handle_delete_itr(&mut itr)
+    handle_delete_itr(model, &mut itr)
 }
 
-pub fn delete_lte(val: String) -> Result<(), tonic::Status> {
-    let mut itr = ROCKSDB.iterator(IteratorMode::From(val.as_bytes(), Direction::Reverse));
+pub fn delete_lte(model: &'static str, val: String) -> Result<(), tonic::Status> {
+    let mut itr = ROCKSDB.iterator(IteratorMode::From(
+        format!("{}#{}", model, val).as_bytes(),
+        Direction::Reverse,
+    ));
 
-    handle_delete_itr(&mut itr)
+    handle_delete_itr(model, &mut itr)
 }
 
-pub fn delete_begins_with(val: String) -> Result<(), tonic::Status> {
+pub fn delete_begins_with(model: &'static str, val: String) -> Result<(), tonic::Status> {
+    let val = format!("{}#{}", model, val);
+
     let mut itr = ROCKSDB.iterator(IteratorMode::From(val.as_bytes(), Direction::Forward));
 
     let mut batch = WriteBatch::default();
