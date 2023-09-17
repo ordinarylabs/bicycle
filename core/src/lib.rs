@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #[macro_use]
 extern crate lazy_static;
 
-use rocksdb::{Options, DB};
+pub mod models;
 
 #[allow(non_snake_case)]
 pub mod proto {
@@ -30,14 +30,4 @@ pub mod proto {
         tonic::include_file_descriptor_set!("bicycle_descriptor");
 }
 
-pub mod models;
-
-// TODO: evaluate using a OnceCell here instead
-lazy_static! {
-    pub(crate) static ref ROCKSDB_CONNECTION: DB = {
-        let mut opts = Options::default();
-        opts.create_if_missing(true);
-
-        DB::open(&opts, "__bicycle__").unwrap()
-    };
-}
+pub(crate) mod engine;
