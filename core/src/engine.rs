@@ -23,11 +23,12 @@ where
     D: DBAccess,
     T: prost::Message + Default,
 {
+    let model_str = &format!("{}#", model);
     let mut items = vec![];
 
     while let Some(Ok((k, v))) = itr.next() {
         if let Ok(key) = from_utf8(&*k) {
-            if key.starts_with(&format!("{}#", model)) {
+            if key.starts_with(model_str) {
                 if let Ok(item) = prost::Message::decode(&*v) {
                     items.push(item);
                 } else {
@@ -49,11 +50,12 @@ fn handle_delete_itr<'a, D>(
 where
     D: DBAccess,
 {
+    let model_str = &format!("{}#", model);
     let mut batch = WriteBatch::default();
 
     while let Some(Ok((k, ..))) = itr.next() {
         if let Ok(key) = from_utf8(&*k) {
-            if key.starts_with(&format!("{}#", model)) {
+            if key.starts_with(model_str) {
                 batch.delete(key);
             } else {
                 break;
