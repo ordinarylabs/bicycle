@@ -42,7 +42,7 @@ impl Bicycle for BicycleService {
         req: Request<IndexQuery>,
     ) -> Result<Response<proto::Examples>, Status> {
         match models::example::get_examples_by_pk(req.into_inner()) {
-            Ok(items) => Ok(Response::new(items)),
+            Ok(items) => Ok(Response::new(proto::Examples { examples: items })),
             Err(err) => {
                 let msg = format!("failed to GET 'Examples': {}", err.to_string());
                 Err(Status::internal(msg))

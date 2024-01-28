@@ -18,184 +18,55 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 use prost::Message;
-use rocksdb::{DBAccess, DBIteratorWithThreadMode, Direction, Error, IteratorMode, WriteBatch};
-use std::str::from_utf8;
 
 use crate::proto;
 use proto::{index_query::Expression, IndexQuery};
 
-use crate::ROCKSDB_CONNECTION;
+use crate::engine::{
+    batch_put, delete_begins_with, delete_eq, delete_gte, delete_lte, get_begins_with, get_eq,
+    get_gte, get_lte, put,
+};
 
-// TODO: this needs to switch to use column families instead of string prefix
-const MODEL_PREFIX: &'static str = "EXAMPLE#";
+const MODEL_NAME: &'static str = "EXAMPLE";
 
-fn handle_gt_lt_get_itr<'a, D>(itr: &mut DBIteratorWithThreadMode<'a, D>) -> Vec<proto::Example>
-where
-    D: DBAccess,
-{
-    let mut items = vec![];
-
-    while let Some(Ok((k, v))) = itr.next() {
-        if let Ok(key) = from_utf8(&*k) {
-            if key.starts_with(MODEL_PREFIX) {
-                if let Ok(item) = proto::Example::decode(&*v) {
-                    items.push(item);
-                }
-            } else {
-                break;
+pub fn get_examples_by_pk(query: IndexQuery) -> Result<Vec<proto::Example>, tonic::Status> {
+    if let Some(expression) = query.expression {
+        match expression {
+            Expression::Eq(val) => return get_eq::<proto::Example>(MODEL_NAME, val),
+            Expression::Gte(val) => return get_gte::<proto::Example>(MODEL_NAME, val),
+            Expression::Lte(val) => return get_lte::<proto::Example>(MODEL_NAME, val),
+            Expression::BeginsWith(val) => {
+                return get_begins_with::<proto::Example>(MODEL_NAME, val)
             }
         }
     }
 
-    items
+    Err(tonic::Status::internal("invalid expression"))
 }
 
-fn handle_gt_lt_delete_itr<'a, D>(itr: &mut DBIteratorWithThreadMode<'a, D>)
-where
-    D: DBAccess,
-{
-    let mut batch = WriteBatch::default();
-
-    while let Some(Ok((k, ..))) = itr.next() {
-        if let Ok(key) = from_utf8(&*k) {
-            if key.starts_with(MODEL_PREFIX) {
-                batch.delete(key);
-            } else {
-                break;
-            }
+pub fn delete_examples_by_pk(query: IndexQuery) -> Result<(), tonic::Status> {
+    if let Some(expression) = query.expression {
+        match expression {
+            Expression::Eq(val) => return delete_eq(MODEL_NAME, val),
+            Expression::Gte(val) => return delete_gte(MODEL_NAME, val),
+            Expression::Lte(val) => return delete_lte(MODEL_NAME, val),
+            Expression::BeginsWith(val) => return delete_begins_with(MODEL_NAME, val),
         }
     }
 
-    match ROCKSDB_CONNECTION.write(batch) {
-        Ok(_) => (),
-        Err(err) => println!("{}", err.to_string()),
-    };
+    Err(tonic::Status::internal("invalid expression"))
 }
 
-fn get_examples_from_query(
-    query: IndexQuery,
-    should_delete: bool,
-) -> Result<proto::Examples, Error> {
-    let examples = match query.expression {
-        Some(exp) => match exp {
-            Expression::Eq(v) => {
-                let val = format!("{}{}", MODEL_PREFIX, v);
-
-                if should_delete {
-                    match ROCKSDB_CONNECTION.delete(val.as_bytes()) {
-                        Ok(_) => (),
-                        Err(err) => println!("{}", err.to_string()),
-                    };
-
-                    vec![]
-                } else {
-                    if let Ok(Some(v)) = ROCKSDB_CONNECTION.get(val.as_bytes()) {
-                        if let Ok(example) = proto::Example::decode(&v[..]) {
-                            vec![example]
-                        } else {
-                            eprintln!("Failed to decode 'Example' from DB");
-                            vec![]
-                        }
-                    } else {
-                        vec![]
-                    }
-                }
-            }
-            Expression::Gte(v) => {
-                let val = format!("{}{}", MODEL_PREFIX, v);
-
-                let mut itr = ROCKSDB_CONNECTION
-                    .iterator(IteratorMode::From(val.as_bytes(), Direction::Forward));
-
-                if should_delete {
-                    handle_gt_lt_delete_itr(&mut itr);
-                    vec![]
-                } else {
-                    handle_gt_lt_get_itr(&mut itr)
-                }
-            }
-            Expression::Lte(v) => {
-                let val = format!("{}{}", MODEL_PREFIX, v);
-
-                let mut itr = ROCKSDB_CONNECTION
-                    .iterator(IteratorMode::From(val.as_bytes(), Direction::Reverse));
-
-                if should_delete {
-                    handle_gt_lt_delete_itr(&mut itr);
-                    vec![]
-                } else {
-                    handle_gt_lt_get_itr(&mut itr)
-                }
-            }
-            Expression::BeginsWith(v) => {
-                let val = format!("{}{}", MODEL_PREFIX, v);
-
-                let mut itr = ROCKSDB_CONNECTION
-                    .iterator(IteratorMode::From(val.as_bytes(), Direction::Forward));
-
-                let mut items = vec![];
-
-                if should_delete {
-                    let mut batch = WriteBatch::default();
-
-                    while let Some(Ok((k, ..))) = itr.next() {
-                        if let Ok(key) = from_utf8(&*k) {
-                            if key.starts_with(&val) {
-                                batch.delete(key)
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    ROCKSDB_CONNECTION.write(batch)?;
-                } else {
-                    while let Some(Ok((k, v))) = itr.next() {
-                        if let Ok(key) = from_utf8(&*k) {
-                            if key.starts_with(&val) {
-                                if let Ok(item) = proto::Example::decode(&*v) {
-                                    items.push(item);
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                items
-            }
-        },
-        None => return Ok(proto::Examples { examples: vec![] }),
-    };
-
-    Ok(proto::Examples { examples })
+pub fn put_example(example: proto::Example) -> Result<(), tonic::Status> {
+    put(MODEL_NAME, example.pk.clone(), example.encode_to_vec())
 }
 
-pub fn get_examples_by_pk(query: IndexQuery) -> Result<proto::Examples, Error> {
-    get_examples_from_query(query, false)
-}
-
-pub fn delete_examples_by_pk(query: IndexQuery) -> Result<proto::Examples, Error> {
-    get_examples_from_query(query, true)
-}
-
-pub fn put_example(example: proto::Example) -> Result<(), Error> {
-    let k = format!("{}{}", MODEL_PREFIX, example.pk.clone());
-    let v = example.encode_to_vec();
-
-    ROCKSDB_CONNECTION.put(k.as_bytes(), v)
-}
-
-pub fn batch_put_examples(examples: proto::Examples) -> Result<(), Error> {
-    let mut batch = WriteBatch::default();
+pub fn batch_put_examples(examples: proto::Examples) -> Result<(), tonic::Status> {
+    let mut params = vec![];
 
     for example in examples.examples {
-        let k = format!("{}{}", MODEL_PREFIX, example.pk.clone());
-        let v = example.encode_to_vec();
-
-        batch.put(k.as_bytes(), v);
+        params.push((example.pk.clone(), example.encode_to_vec()));
     }
 
-    ROCKSDB_CONNECTION.write(batch)
+    batch_put(MODEL_NAME, params)
 }

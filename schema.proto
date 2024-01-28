@@ -23,7 +23,7 @@ package bicycle;
 message Person {
     message Dog {
         string pk = 1;
-        // string breed = 2;
+        string breed = 2;
     }
 
     string pk = 1;

@@ -30,9 +30,10 @@ const WORKSPACE_CARGO_TOML: &'static str = include_str!("../Cargo.toml");
 
 const CORE_BUILD_RS: &'static str = include_str!("../core/build.rs");
 const CORE_CARGO_TOML: &'static str = include_str!("../core/Cargo.toml");
-const CORE_DATABASE_PROTO: &'static str = include_str!("../core/bicycle.proto");
-const CORE_SRC_LIB_RS: &'static str = include_str!("../core/src/lib.rs");
+const CORE_BICYCLE_PROTO: &'static str = include_str!("../core/bicycle.proto");
 const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!("../core/src/models/example.rs");
+const CORE_SRC_ENGINE_RS: &'static str = include_str!("../core/src/engine.rs");
+const CORE_SRC_LIB_RS: &'static str = include_str!("../core/src/lib.rs");
 
 const SERVER_CARGO_TOML: &'static str = include_str!("../server/Cargo.toml");
 const SERVER_SRC_MAIN_RS: &'static str = include_str!("../server/src/main.rs");
@@ -58,12 +59,12 @@ fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
 
 lazy_static! {
     static ref PROTO_MODEL_MESSAGES: String = get_between(
-        CORE_DATABASE_PROTO,
+        CORE_BICYCLE_PROTO,
         "##MODEL_MESSAGES_START##",
         Some("##MODEL_MESSAGES_END##"),
     );
     static ref PROTO_MODEL_RPCS: String = get_between(
-        CORE_DATABASE_PROTO,
+        CORE_BICYCLE_PROTO,
         "##MODEL_RPCS_START##",
         Some("##MODEL_RPCS_END##"),
     );
@@ -100,6 +101,7 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
 
     create_dir("core/src");
     write_file("core/src/lib.rs", CORE_SRC_LIB_RS);
+    write_file("core/src/engine.rs", CORE_SRC_ENGINE_RS);
 
     create_dir("core/src/models");
 
@@ -152,7 +154,7 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
         );
     }
 
-    let mut proto = CORE_DATABASE_PROTO
+    let mut proto = CORE_BICYCLE_PROTO
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
 
