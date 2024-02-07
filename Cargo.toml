@@ -45,21 +45,17 @@ members = ["core", "server"]
 [workspace.dependencies]
 lazy_static = "1.4.0"
 
-prost = "0.11.9"
-prost-types = "0.11.9"
+prost = "0.12.3"
+prost-types = "0.12.3"
 
-tonic = "0.9.2"
-tonic-build = "0.9.2"
-tonic-reflection = "0.9.2"
+tonic = "0.10.2"
+tonic-build = "0.10.2"
+tonic-reflection = "0.10.2"
 
 rocksdb = "0.21.0"
 
-r2d2 = "0.8.10"
-r2d2_sqlite = "0.22.0"
-rusqlite = "0.29.0"
-
 tokio-stream = "0.1.14"
-tokio = "1.29.1"
+tokio = "1.36.0"
 
 bicycle_core = { path = "core", version = "0.1.2" }
 bicycle_server = { path = "server", version = "0.1.2" }

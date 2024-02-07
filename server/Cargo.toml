@@ -39,8 +39,6 @@ tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macro
 
 jemallocator = "0.5.0"
 parking_lot = "0.12.1"
-chrono = "0.4.9"
-bcrypt = "0.14.0"
-jsonwebtoken = "8.3.0"
+chrono = "0.4.33"
 
 serde = { version = "1.0", features = ["derive"] }
