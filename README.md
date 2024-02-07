@@ -1,5 +1,6 @@
 # Bicycle 🚲
 
+[![ci](https://github.com//ordinarylabs/bicycle/actions/workflows/ci.yml/badge.svg)](https://github.com//ordinarylabs/bicycle/actions/workflows/ci.yml)
 [![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
 [![dependency status](https://deps.rs/repo/github/ordinarylabs/bicycle/status.svg)](https://deps.rs/repo/github/ordinarylabs/bicycle)
 
@@ -9,7 +10,7 @@ We're striving to reduce dynamic query parsing at run time.
 
 ## Why the name?
 
-The Bicycle is a metaphor for useful complexity, and one of the most influential inventions in history. 
+The Bicycle is a metaphor for useful complexity, and one of the more influential inventions in history. 
 It is also an interesting analogy for the anatomy of the framework...
 
 - Wheels (transport): gRPC
