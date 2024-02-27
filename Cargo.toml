@@ -17,7 +17,7 @@
 
 [package]
 name = "bicycle"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 license = "AGPL-3.0"
 authors = ["sean watters sean@watters.io"]
@@ -25,7 +25,7 @@ description = "CLI tool for the Bicycle project"
 repository = "https://github.com/ordinarylabs/bicycle"
 homepage = "https://github.com/ordinarylabs"
 readme = "README.md"
-include = ["/cli", "/core", "/plugin", "/server"] 
+# include = ["/cli", "/core", "/plugin", "/server"] 
 
 [[bin]]
 name = "bicycle"
