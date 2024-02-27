@@ -1,7 +1,7 @@
 /*
-Bicycle is a database, used for things databases are used for.
+Bicycle is a database database framework.
 
-Copyright (C) 2023  sean watters
+Copyright (C) 2024  Ordinary Labs, LLC
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -18,12 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 use std::env;
-
-mod create;
-mod gen;
-mod utils;
-
-pub(crate) const PRECOMPILE_DIR: &'static str = "./__precompile__";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -47,7 +41,7 @@ fn main() {
     }
 
     match command.as_str() {
-        "create" => create::create(schema_path, plugins),
+        "create" => bicycle::build_with_plugins(schema_path, plugins),
         _ => panic!("invalid command"),
     }
 }

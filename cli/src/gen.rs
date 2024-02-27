@@ -1,7 +1,7 @@
 /*
-Bicycle is a database, used for things databases are used for.
+Bicycle is a database database framework.
 
-Copyright (C) 2023  sean watters
+Copyright (C) 2024  Ordinary Labs, LLC
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -27,27 +27,41 @@ use lazy_static::lazy_static;
 use crate::{utils::Model, PRECOMPILE_DIR};
 
 const WORKSPACE_CARGO_TOML: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"));
+    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/Freight.toml"));
 
-const CORE_BUILD_RS: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/core/build.rs"));
-const CORE_CARGO_TOML: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/core/Cargo.toml"));
-const CORE_BICYCLE_PROTO: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/core/bicycle.proto"));
+const CORE_BUILD_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/core/build.rs"
+));
+const CORE_CARGO_TOML: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/core/Freight.toml"
+));
+const CORE_BICYCLE_PROTO: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/core/bicycle.proto"
+));
 const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/core/src/models/example.rs"
+    "/cli/tmp/core/src/models/example.rs"
 ));
-const CORE_SRC_ENGINE_RS: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/core/src/engine.rs"));
-const CORE_SRC_LIB_RS: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/core/src/lib.rs"));
+const CORE_SRC_ENGINE_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/core/src/engine.rs"
+));
+const CORE_SRC_LIB_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/core/src/lib.rs"
+));
 
-const SERVER_CARGO_TOML: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/server/Cargo.toml"));
-const SERVER_SRC_MAIN_RS: &'static str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/server/src/main.rs"));
+const SERVER_CARGO_TOML: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/server/Freight.toml"
+));
+const SERVER_SRC_MAIN_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/server/src/main.rs"
+));
 
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
     let start = match content.find(from) {

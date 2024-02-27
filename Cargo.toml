@@ -1,6 +1,6 @@
-# Bicycle is a database, used for things databases are used for.
+# Bicycle is a database database framework.
 
-# Copyright (C) 2023  sean watters
+# Copyright (C) 2024  Ordinary Labs, LLC
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,17 +19,22 @@
 name = "bicycle"
 version = "0.1.4"
 edition = "2021"
-license = "AGPL-3.0"
-authors = ["sean watters sean@watters.io"]
-description = "CLI tool for the Bicycle project"
-repository = "https://github.com/ordinarylabs/bicycle"
-homepage = "https://github.com/ordinarylabs"
-readme = "README.md"
-# include = ["/cli", "/core", "/plugin", "/server"] 
+license.workspace = true
+authors.workspace = true
+description = "Builder tool for the Bicycle project"
+repository.workspace = true
+homepage.workspace = true
+readme = "../README.md"
+include = ["/cli"]
+build = "cli/build.rs"
+
+[lib]
+name = "bicycle"
+path = "cli/src/lib.rs"
 
 [[bin]]
 name = "bicycle"
-path = "cli/main.rs"
+path = "cli/src/main.rs"
 
 [dependencies]
 lazy_static = { workspace = true }
@@ -41,6 +46,13 @@ tonic-build = { workspace = true }
 
 [workspace]
 members = ["core", "server"]
+
+[workspace.package]
+authors = ["sean watters <sean@ordinarylabs.io>"]
+edition = "2021"
+homepage = "https://ordinarylabs.io"
+repository = "https://github.com/ordinarylabs/bicycle"
+license = "AGPL-3.0-only"
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
@@ -57,5 +69,5 @@ rocksdb = "0.21.0"
 tokio-stream = "0.1.14"
 tokio = "1.36.0"
 
-bicycle_core = { path = "core", version = "0.1.2" }
-bicycle_server = { path = "server", version = "0.1.2" }
+bicycle_core = { path = "./core" }
+bicycle_server = { path = "./server" }

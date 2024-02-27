@@ -1,7 +1,7 @@
 /*
-Bicycle is a database, used for things databases are used for.
+Bicycle is a database database framework.
 
-Copyright (C) 2023  sean watters
+Copyright (C) 2024  Ordinary Labs, LLC
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -28,7 +28,7 @@ use prost_types::FileDescriptorSet;
 use crate::utils::construct_model;
 use crate::{gen, utils::Model, PRECOMPILE_DIR};
 
-pub fn create(schema_path: &str, plugins: Vec<String>) {
+pub fn create_with_plugins(schema_path: &str, plugins: Vec<String>) {
     if Path::new(PRECOMPILE_DIR).exists() {
         fs::remove_dir_all(PRECOMPILE_DIR).unwrap();
     }

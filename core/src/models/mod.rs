@@ -1,7 +1,7 @@
 /*
-Bicycle is a database, used for things databases are used for.
+Bicycle is a database database framework.
 
-Copyright (C) 2023  sean watters
+Copyright (C) 2024  Ordinary Labs, LLC
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as

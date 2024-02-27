@@ -1,6 +1,6 @@
-# Bicycle is a database, used for things databases are used for.
+# Bicycle is a database database framework.
 
-# Copyright (C) 2023  sean watters
+# Copyright (C) 2024  Ordinary Labs, LLC
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,16 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [workspace]
+# NOT PART OF THE WORKSPACE
 
 [package]
 name = "bicycle_plugin"
 version = "0.1.0"
 edition = "2021"
-license = "AGPL-3.0"
-authors = ["sean watters sean@watters.io"]
+license = "AGPL-3.0-only"
+authors = ["sean watters <sean@ordinarylabs.io>"]
 description = "Plugin example for the Bicycle project"
 repository = "https://github.com/ordinarylabs/bicycle"
-homepage = "https://github.com/ordinarylabs"
+homepage = "https://ordinarylabs.io"
 
 [dependencies]
 tonic = "0.9.2"
