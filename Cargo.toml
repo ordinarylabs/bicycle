@@ -17,7 +17,7 @@
 
 [package]
 name = "bicycle"
-version = "0.1.4"
+version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
@@ -60,6 +60,7 @@ homepage = "https://ordinarylabs.io"
 repository = "https://github.com/ordinarylabs/bicycle"
 license = "AGPL-3.0-only"
 categories = ["database"]
+version = "0.1.4"
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
@@ -76,5 +77,5 @@ rocksdb = "0.21.0"
 tokio-stream = "0.1.14"
 tokio = "1.36.0"
 
-bicycle_core = { path = "./core" }
-bicycle_server = { path = "./server" }
+bicycle_core = { path = "./core", version = "0.1.4" }
+bicycle_server = { path = "./server", version = "0.1.4" }

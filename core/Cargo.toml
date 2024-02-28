@@ -17,7 +17,7 @@
 
 [package]
 name = "bicycle_core"
-version = "0.1.4"
+version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
