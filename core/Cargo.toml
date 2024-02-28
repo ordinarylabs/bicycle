@@ -24,6 +24,7 @@ authors.workspace = true
 description = "Protobuf definitions and RocksDB wrapper for the Bicycle project"
 repository.workspace = true
 homepage.workspace = true
+categories.workspace = true
 
 [dependencies]
 lazy_static = { workspace = true }

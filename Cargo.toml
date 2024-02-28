@@ -24,6 +24,7 @@ authors.workspace = true
 description = "Builder tool for the Bicycle project"
 repository.workspace = true
 homepage.workspace = true
+categories.workspace = true
 readme = "README.md"
 include = ["/cli"]
 
@@ -58,6 +59,7 @@ edition = "2021"
 homepage = "https://ordinarylabs.io"
 repository = "https://github.com/ordinarylabs/bicycle"
 license = "AGPL-3.0-only"
+categories = ["database"]
 
 [workspace.dependencies]
 lazy_static = "1.4.0"

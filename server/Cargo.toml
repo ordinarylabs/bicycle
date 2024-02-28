@@ -23,6 +23,7 @@ authors.workspace = true
 description = "gRPC database server for the Bicycle project"
 repository.workspace = true
 homepage.workspace = true
+categories.workspace = true
 
 [dependencies]
 bicycle_core = { workspace = true }
