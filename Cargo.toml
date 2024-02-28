@@ -24,8 +24,10 @@ authors.workspace = true
 description = "Builder tool for the Bicycle project"
 repository.workspace = true
 homepage.workspace = true
-readme = "../README.md"
+readme = "README.md"
 include = ["/cli"]
+
+# !! comment out when publishing
 build = "cli/build.rs"
 
 [lib]
@@ -43,6 +45,9 @@ heck = "0.4.1"
 prost = { workspace = true }
 prost-types = { workspace = true }
 tonic-build = { workspace = true }
+
+[package.metadata.docs.rs]
+rustc-args = ["--cfg" , "doc"]
 
 [workspace]
 members = ["core", "server"]
