@@ -208,8 +208,7 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
             let lines: Vec<&str> = plugin_lib
                 .lines()
                 .filter(|&line| {
-                    !line.trim().starts_with("#[allow(non_snake_case)]")
-                        && !line.trim().starts_with("mod proto;")
+                    !line.trim().starts_with("mod proto;")
                         && !line
                             .trim()
                             .starts_with("use tonic::{Request, Response, Status};")

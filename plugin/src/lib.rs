@@ -17,8 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// !! every plugin's `lib.rs` must start with the next 3 lines
-#[allow(non_snake_case)]
+// !! every plugin's `lib.rs` must start with the next 2 lines
 mod proto;
 use tonic::{Request, Response, Status};
 

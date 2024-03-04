@@ -15,9 +15,17 @@ It is also an interesting analogy for the anatomy of the framework...
 - Frame (storage engine): RocksDB
 - Pedals, gears, handlebars, breaks, etc. (logic): Rust
 
+## Install
+
+Before installing `bicycle` you'll need to have [Rust](https://www.rust-lang.org/tools/install) and [protoc](https://grpc.io/docs/protoc-installation/) installed.
+
+```bash
+cargo install bicycle
+```
+
 ## Usage
 
-A Bicycle schema is defined in a simple `.proto` file like so:
+A Bicycle schema is defined in a simple `.proto` file.
 
 ```protobuf
 // schema.proto
@@ -33,25 +41,17 @@ message Dog {
 }
 ```
 
-We don't distribute the binary yet but if you clone down this repository you can play around with it:
+Then run the `create` command to generate your Bicycle server binary and protobuf definition.
 
 ```bash
-## clone
-git clone git@github.com:ordinarylabs/bicycle.git && cd bicycle
-
-## generate your `./out/server` and `./out/bicycle.proto`
-cargo run -- create schema.proto
-
-## (feel free to edit the `schema.proto`, locally, as your "playground")
+bicycle create schema.proto
 ```
 
-That will create a server binary and proto file for your consuming services. So in the `out/` you'll have `server` and `bicycle.proto`.
-
-Now, the `bicycle.proto` can be used to codegen the client in any language. 
+Now in the `out/` directory you'll have `server` and `bicycle.proto`.
 
 ## Running
 
-Once RocksDB is finally done building, you should be able to run the server with:
+You can now run the server binary with the following command.
 
 ```bash
 ./out/server
@@ -59,7 +59,9 @@ Once RocksDB is finally done building, you should be able to run the server with
 
 ## Clients
 
-When you run the `create` command, it will take in your `schema.proto` and produce an `./out/bicycle.proto` that looks something like this:
+You can also use the `./out/bicycle.proto` (see example output below) to build your database clients.
+
+Because the Bicycle server is just a gRPC server, you can use the gRPC libraries for any language you like. Additionally, Bicycle servers implement [server reflection] you can also roll over to your preferred gRPC GUI client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
 
 ```protobuf
 // out/bicycle.proto
@@ -95,10 +97,6 @@ service Bicycle {
 }
 ```
 
-Because the database server is just a gRPC server, you can use all native gRPC libraries for any language you like.
-and you can also roll over to your preferred gRPC GUI client, type in `localhost::50051`, _AND_ because we implement
-server reflection, when you plug in the URL it will automatically load up all your available RPCs (assuming your client GUI supports that).
-
 ## Example
 
 Basically we have 4 RPCs for each model:
@@ -115,33 +113,33 @@ Here are the really basic examples:
 ```bash
 ## PutDog
 grpcurl -plaintext -d '{
-  "pk": "DOG#1",
+  "pk": "1",
   "name": "Rover",
   "age": 3,
   "breed": "Golden Retriever"
-}' localhost:50051 bicycle.Bicycle.PutDog
+}' 0.0.0.0:50051 bicycle.Bicycle.PutDog
 
 ## BatchPutDogs
 grpcurl -plaintext -d '{
   "dogs": [
     {
-      "pk": "DOG#2",
+      "pk": "2",
       "name": "Buddy",
       "age": 2,
       "breed": "Labrador"
     },
     {
-      "pk": "DOG#3",
+      "pk": "3",
       "name": "Max",
       "age": 4,
       "breed": "Poodle"
     }
   ]
-}' localhost:50051 bicycle.Bicycle.BatchPutDogs
+}' 0.0.0.0:50051 bicycle.Bicycle.BatchPutDogs
 
 ## GetDogs
-grpcurl -plaintext -d '{"begins_with": "DOG#"}' localhost:50051 bicycle.Bicycle.GetDogsByPk
+grpcurl -plaintext -d '{"begins_with": ""}' 0.0.0.0:50051 bicycle.Bicycle.GetDogsByPk
 
 ## DeleteDogs
-grpcurl -plaintext -d '{"eq": "DOG#3"}' localhost:50051 bicycle.Bicycle.DeleteDogsByPk
+grpcurl -plaintext -d '{"eq": "3"}' 0.0.0.0:50051 bicycle.Bicycle.DeleteDogsByPk
 ```

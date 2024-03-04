@@ -17,10 +17,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::env;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
-use std::{env, fs, fs::File};
+use std::time::Instant;
+use std::{fs, fs::File};
 
 use prost::Message;
 use prost_types::FileDescriptorSet;
@@ -61,6 +63,9 @@ pub fn create_with_plugins(schema_path: &str, plugins: Vec<String>) {
     fs::remove_file(tmp_desc_path).unwrap();
     fs::remove_file(precompile_dir.join("bicycle.rs")).unwrap();
 
+    let now = Instant::now();
+    println!("📁 generating files...");
+
     gen::gen(models, plugins);
 
     if let Err(err) = env::set_current_dir(PRECOMPILE_DIR) {
@@ -83,24 +88,66 @@ pub fn create_with_plugins(schema_path: &str, plugins: Vec<String>) {
         file.write_all(code.as_bytes()).unwrap();
     }
 
+    println!(
+        "📁 done generating files. [{}ms]",
+        now.elapsed().as_millis()
+    );
+
+    let now = Instant::now();
+    println!("🛠️  building server...");
+
     Command::new("cargo")
         .args(["build", "--release", "-p", "bicycle_server"])
         .output()
         .unwrap();
 
+    println!(
+        "🛠️  done building server. [{}ms]",
+        now.elapsed().as_millis()
+    );
+
     if !Path::new("../out").exists() {
         fs::create_dir("../out").unwrap();
     }
+
+    let now = Instant::now();
+    println!("📦 moving proto file...");
 
     Command::new("mv")
         .args(["./core/bicycle.proto", "../out"])
         .output()
         .unwrap();
 
+    println!(
+        "📦 done moving proto file. [{}ms]",
+        now.elapsed().as_millis()
+    );
+
+    let now = Instant::now();
+    println!("📦 moving server binary...");
+
     Command::new("mv")
         .args(["./target/release/bicycle_server", "../out/server"])
         .output()
         .unwrap();
 
+    println!(
+        "📦 done moving server binary. [{}ms]",
+        now.elapsed().as_millis()
+    );
+
+    let now = Instant::now();
+    println!("📁 clearing {}...", PRECOMPILE_DIR);
+
     fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
+
+    println!(
+        "📁 cleared {}. [{}ms]",
+        PRECOMPILE_DIR,
+        now.elapsed().as_millis()
+    );
+
+    println!("✅ done!");
+
+    println!("\n🚀 start server: ./out/server\n🚲 client codegen: ./out/bicycle.proto")
 }
