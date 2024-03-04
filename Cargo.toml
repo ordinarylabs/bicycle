@@ -40,15 +40,14 @@ name = "bicycle"
 path = "cli/src/main.rs"
 
 [dependencies]
-lazy_static = { workspace = true }
 heck = "0.4.1"
+toml = "0.8.10"
+
+lazy_static = { workspace = true }
 
 prost = { workspace = true }
 prost-types = { workspace = true }
 tonic-build = { workspace = true }
-
-[package.metadata.docs.rs]
-rustc-args = ["--cfg" , "doc"]
 
 [workspace]
 members = ["core", "server"]

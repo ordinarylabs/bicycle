@@ -17,9 +17,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
+use std::{collections::HashSet, fs};
 
 use heck::{ToPascalCase, ToShoutySnakeCase, ToSnakeCase};
 use lazy_static::lazy_static;
@@ -100,8 +100,6 @@ lazy_static! {
     );
 }
 
-// TODO: remove all .unwrap()s
-
 fn create_dir(path: &str) {
     let path = format!("{}/{}", PRECOMPILE_DIR, path);
 
@@ -131,7 +129,6 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
     create_dir("core/src/models");
 
     create_dir("server");
-    write_file("server/Cargo.toml", SERVER_CARGO_TOML);
 
     create_dir("server/src");
 
@@ -185,42 +182,61 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
 
     let mut plugin_libs = "".to_string();
     let mut plugin_services = "".to_string();
+    let mut plugin_deps = "".to_string();
+
+    let mut seen_deps = HashSet::new();
 
     for plugin in plugins {
         let proto_path = format!("{}/{}.proto", plugin, plugin);
         let lib_path = format!("{}/src/lib.rs", plugin);
+        let cargo_path = format!("{}/Cargo.toml", plugin);
 
-        match fs::read_to_string(&proto_path) {
-            Ok(plugin_proto) => {
-                let lines: Vec<&str> = plugin_proto
-                    .lines()
-                    .filter(|&line| {
-                        !line.trim().starts_with("package") && !line.trim().starts_with("syntax")
-                    })
-                    .collect();
+        if let Ok(plugin_proto) = fs::read_to_string(&proto_path) {
+            let lines: Vec<&str> = plugin_proto
+                .lines()
+                .filter(|&line| {
+                    !line.trim().starts_with("package") && !line.trim().starts_with("syntax")
+                })
+                .collect();
 
-                proto = format!("{}\n{}", proto, lines.join("\n"));
-            }
-            Err(_) => println!("no proto found at {}", proto_path),
+            proto = format!("{}\n{}", proto, lines.join("\n"));
+        } else {
+            println!("no proto found at {}", proto_path)
         }
 
-        match fs::read_to_string(&lib_path) {
-            Ok(plugin_proto) => {
-                let lines: Vec<&str> = plugin_proto
-                    .lines()
-                    .filter(|&line| {
-                        !line.trim().starts_with("#[allow(non_snake_case)]")
-                            && !line.trim().starts_with("mod proto;")
-                            && !line
-                                .trim()
-                                .starts_with("use tonic::{Request, Response, Status};")
-                            && !line.trim().starts_with("//")
-                    })
-                    .collect();
+        if let Ok(plugin_lib) = fs::read_to_string(&lib_path) {
+            let lines: Vec<&str> = plugin_lib
+                .lines()
+                .filter(|&line| {
+                    !line.trim().starts_with("#[allow(non_snake_case)]")
+                        && !line.trim().starts_with("mod proto;")
+                        && !line
+                            .trim()
+                            .starts_with("use tonic::{Request, Response, Status};")
+                        && !line.trim().starts_with("//")
+                })
+                .collect();
 
-                plugin_libs = format!("{}\n{}", plugin_libs, lines.join("\n"));
+            plugin_libs = format!("{}\n{}", plugin_libs, lines.join("\n"));
+        } else {
+            println!("no lib.rs found at {}", lib_path)
+        }
+
+        if let Ok(plugin_cargo) = fs::read_to_string(&cargo_path) {
+            let as_table = plugin_cargo.parse::<toml::Table>().unwrap();
+
+            if let toml::Value::Table(dependencies) = as_table["dependencies"].clone() {
+                for (k, v) in dependencies {
+                    if k != "tonic" && k != "prost" && !seen_deps.contains(&k) {
+                        plugin_deps =
+                            format!("{}\n{} = {}", plugin_deps, k.to_string(), v.to_string());
+
+                        seen_deps.insert(k);
+                    }
+                }
             }
-            Err(_) => println!("no lib.rs found at {}", lib_path),
+        } else {
+            println!("no Cargo.toml found at {}", cargo_path)
         }
 
         plugin_services = format!(
@@ -234,11 +250,14 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
     write_file("core/bicycle.proto", &proto);
     write_file("core/src/models/mod.rs", &core_models_mod_rs);
 
-    let main_rs = SERVER_SRC_MAIN_RS
+    let server_src_main_rs = SERVER_SRC_MAIN_RS
         .replace("// ##PLUGIN_LIBS##", &plugin_libs)
         .replace(&SERVER_HANDLERS.to_string(), &server_handlers_block)
         .replace("// ##PLUGIN_SERVICES##", &plugin_services);
-    write_file("server/src/main.rs", &main_rs);
+    write_file("server/src/main.rs", &server_src_main_rs);
+
+    let server_cargo_toml = SERVER_CARGO_TOML.replace("##PLUGIN_DEPS##", &plugin_deps);
+    write_file("server/Cargo.toml", &server_cargo_toml);
 }
 
 fn gen_proto(model: &Model) -> (String, String) {

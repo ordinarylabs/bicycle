@@ -26,4 +26,5 @@ message Echo {
 
 service Plugin {
   rpc PluginEcho(Echo) returns (Echo) {}
+  rpc PluginEchoLoud(Echo) returns (Echo) {}
 }

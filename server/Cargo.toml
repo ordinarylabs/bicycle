@@ -42,3 +42,5 @@ jemallocator = "0.5.0"
 parking_lot = "0.12.1"
 
 serde = { version = "1.0", features = ["derive"] }
+
+##PLUGIN_DEPS##

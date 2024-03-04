@@ -34,4 +34,14 @@ impl Plugin for PluginService {
     async fn plugin_echo(&self, req: Request<Echo>) -> Result<Response<Echo>, Status> {
         Ok(Response::new(req.into_inner()))
     }
+
+    async fn plugin_echo_loud(&self, req: Request<Echo>) -> Result<Response<Echo>, Status> {
+        use heck::ToShoutySnekCase;
+
+        let resp = Echo {
+            hiya_buddy: req.into_inner().hiya_buddy.TO_SHOUTY_SNEK_CASE(),
+        };
+
+        Ok(Response::new(resp))
+    }
 }
