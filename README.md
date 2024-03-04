@@ -19,7 +19,7 @@ It is also an interesting analogy for the anatomy of the framework...
 
 A Bicycle schema is defined in a simple `.proto` file like so:
 
-```proto
+```protobuf
 // schema.proto
 syntax = "proto3";
 package bicycle;
@@ -61,7 +61,7 @@ Once RocksDB is finally done building, you should be able to run the server with
 
 When you run the `create` command, it will take in your `schema.proto` and produce an `./out/bicycle.proto` that looks something like this:
 
-```proto
+```protobuf
 // out/bicycle.proto
 syntax = "proto3";
 package bicycle;

@@ -139,7 +139,7 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "bicycle"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "heck",
  "lazy_static",
@@ -151,7 +151,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "lazy_static",
  "prost",
@@ -162,7 +162,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_server"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bicycle_core",
  "jemallocator",
