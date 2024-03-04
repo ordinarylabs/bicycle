@@ -31,12 +31,6 @@ message Example {
 
 message IndexQuery {
   oneof expression {
-    // TODO: should probably have a separate message called
-    // TODO: BatchIndexQuery (or something) that allows you to submit multiple
-    // TODO: query criteria so you can batch query many key ranges in
-    // TODO: one round trip. concurrent reads should also help
-    // TODO: application performance
-
     string eq = 1;
     string gte = 2;
     string lte = 3;

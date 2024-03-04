@@ -22,8 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 mod proto;
 use tonic::{Request, Response, Status};
 
-// !! exported for use in the server
-pub use proto::plugin_server::PluginServer;
+use proto::plugin_server::PluginServer;
 use proto::{plugin_server::Plugin, Echo};
 
 // !! must be named `XyzService` where `Xyz` is the PascalCase name of your plugin

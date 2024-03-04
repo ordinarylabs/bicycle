@@ -62,6 +62,7 @@ Once RocksDB is finally done building, you should be able to run the server with
 When you run the `create` command, it will take in your `schema.proto` and produce an `./out/bicycle.proto` that looks something like this:
 
 ```proto
+// out/bicycle.proto
 syntax = "proto3";
 package bicycle;
 
