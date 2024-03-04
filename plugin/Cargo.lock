@@ -116,7 +116,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ba43ea6f343b788c8764558649e08df62f86c6ef251fdaeb1ffd010a9ae50a2"
 
 [[package]]
-name = "bicycle_plugin"
+name = "bicycle-plugin"
 version = "0.1.0"
 dependencies = [
  "heck",

@@ -17,18 +17,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// !! every plugin's `lib.rs` must start with the next 2 lines
-mod proto;
 use tonic::{Request, Response, Status};
 
-use proto::plugin_server::PluginServer;
+mod proto {
+    tonic::include_proto!("plugin");
+}
+
+pub const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("plugin_descriptor");
+
+pub use proto::plugin_server::PluginServer as Server;
 use proto::{plugin_server::Plugin, Echo};
 
-// !! must be named `XyzService` where `Xyz` is the PascalCase name of your plugin
-pub struct PluginService {}
+pub struct Service {}
 
 #[tonic::async_trait]
-impl Plugin for PluginService {
+impl Plugin for Service {
     async fn plugin_echo(&self, req: Request<Echo>) -> Result<Response<Echo>, Status> {
         Ok(Response::new(req.into_inner()))
     }

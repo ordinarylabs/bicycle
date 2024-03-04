@@ -17,11 +17,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
-use std::{collections::HashSet, fs};
 
-use heck::{ToPascalCase, ToShoutySnakeCase, ToSnakeCase};
+use heck::{ToShoutySnakeCase, ToSnakeCase};
 use lazy_static::lazy_static;
 
 use crate::{utils::Model, PRECOMPILE_DIR};
@@ -176,87 +176,104 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
         );
     }
 
-    let mut proto = CORE_BICYCLE_PROTO
+    write_file("core/src/models/mod.rs", &core_models_mod_rs);
+
+    let proto = CORE_BICYCLE_PROTO
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
+    write_file("core/bicycle.proto", &proto);
 
-    let mut plugin_libs = "".to_string();
+    let mut plugin_descriptors = "".to_string();
     let mut plugin_services = "".to_string();
     let mut plugin_deps = "".to_string();
 
-    let mut seen_deps = HashSet::new();
-
     for plugin in plugins {
-        let proto_path = format!("{}/{}.proto", plugin, plugin);
-        let lib_path = format!("{}/src/lib.rs", plugin);
-        let cargo_path = format!("{}/Cargo.toml", plugin);
+        // --plugins crates.io:plugin@0.1.0 path:bicycle-plugin@../plugin git:https:://plugin.com@rev:4c59b707|branch:next|tag:0.1.0
 
-        if let Ok(plugin_proto) = fs::read_to_string(&proto_path) {
-            let lines: Vec<&str> = plugin_proto
-                .lines()
-                .filter(|&line| {
-                    !line.trim().starts_with("package") && !line.trim().starts_with("syntax")
-                })
-                .collect();
+        let source = plugin.split(":").collect::<Vec<&str>>()[0];
+        let plugin = plugin.clone().split_off(source.len() + 1);
 
-            proto = format!("{}\n{}", proto, lines.join("\n"));
-        } else {
-            println!("no proto found at {}", proto_path)
-        }
+        let mut name = "".to_string();
 
-        if let Ok(plugin_lib) = fs::read_to_string(&lib_path) {
-            let lines: Vec<&str> = plugin_lib
-                .lines()
-                .filter(|&line| {
-                    !line.trim().starts_with("mod proto;")
-                        && !line
-                            .trim()
-                            .starts_with("use tonic::{Request, Response, Status};")
-                        && !line.trim().starts_with("//")
-                })
-                .collect();
+        let mut should_add_service = true;
 
-            plugin_libs = format!("{}\n{}", plugin_libs, lines.join("\n"));
-        } else {
-            println!("no lib.rs found at {}", lib_path)
-        }
+        match source {
+            "crates.io" => {
+                let split_plugin = plugin.split("@").collect::<Vec<&str>>();
 
-        if let Ok(plugin_cargo) = fs::read_to_string(&cargo_path) {
-            let as_table = plugin_cargo.parse::<toml::Table>().unwrap();
+                name = split_plugin[0].to_string();
+                let version = split_plugin[1];
 
-            if let toml::Value::Table(dependencies) = as_table["dependencies"].clone() {
-                for (k, v) in dependencies {
-                    if k != "tonic" && k != "prost" && !seen_deps.contains(&k) {
-                        plugin_deps =
-                            format!("{}\n{} = {}", plugin_deps, k.to_string(), v.to_string());
+                plugin_deps = format!("{}\n{} = {}", plugin_deps, name, version);
+            }
+            "path" => {
+                let split_plugin = plugin.split("@").collect::<Vec<&str>>();
 
-                        seen_deps.insert(k);
-                    }
+                name = split_plugin[0].to_string();
+                let path = split_plugin[1];
+
+                plugin_deps = format!(
+                    "{}\n{} = {{ path = \"../../{}\" }}",
+                    plugin_deps, name, path
+                );
+
+                name = split_plugin[0].to_snake_case();
+            }
+            "git" => {
+                let split_plugin = plugin.split("@").collect::<Vec<&str>>();
+
+                name = split_plugin[0].to_string();
+                let version = split_plugin[1];
+
+                let split_version = version.split(":").collect::<Vec<&str>>();
+                let version_type = split_version[0];
+
+                if version_type == "rev" || version_type == "branch" || version_type == "tag" {
+                    let version = split_version[1];
+
+                    plugin_deps = format!(
+                        "{}\n{} = {{ git = \"{}\", {} = \"{}\" }}",
+                        plugin_deps, name, plugin, version_type, version
+                    );
+                } else {
+                    println!(
+                        "git version type \"{}\" not supported. try \"rev\", \"branch\" or \"tag\"",
+                        version_type
+                    );
+                    should_add_service = false;
                 }
             }
-        } else {
-            println!("no Cargo.toml found at {}", cargo_path)
+            _ => {
+                println!(
+                    "unsupported plugin source \"{}\". try \"crates.io\", \"git\" or \"path\"",
+                    source
+                );
+                should_add_service = false;
+            }
+        };
+
+        if should_add_service {
+            plugin_descriptors = format!(
+                r#"{}.register_encoded_file_descriptor_set({}::FILE_DESCRIPTOR_SET)
+            "#,
+                plugin_descriptors, name
+            );
+            plugin_services = format!(
+                r#"{}.add_service({}::Server::new({}::Service {{}}))
+        "#,
+                plugin_services, name, name,
+            );
         }
-
-        plugin_services = format!(
-            "{}.add_service({}Server::new({}Service {{}}))\n        ",
-            plugin_services,
-            plugin.to_pascal_case(),
-            plugin.to_pascal_case(),
-        )
     }
-
-    write_file("core/bicycle.proto", &proto);
-    write_file("core/src/models/mod.rs", &core_models_mod_rs);
-
-    let server_src_main_rs = SERVER_SRC_MAIN_RS
-        .replace("// ##PLUGIN_LIBS##", &plugin_libs)
-        .replace(&SERVER_HANDLERS.to_string(), &server_handlers_block)
-        .replace("// ##PLUGIN_SERVICES##", &plugin_services);
-    write_file("server/src/main.rs", &server_src_main_rs);
 
     let server_cargo_toml = SERVER_CARGO_TOML.replace("##PLUGIN_DEPS##", &plugin_deps);
     write_file("server/Cargo.toml", &server_cargo_toml);
+
+    let server_src_main_rs = SERVER_SRC_MAIN_RS
+        .replace(&SERVER_HANDLERS.to_string(), &server_handlers_block)
+        .replace("// ##PLUGIN_DESCRIPTORS##", &plugin_descriptors)
+        .replace("// ##PLUGIN_SERVICES##", &plugin_services);
+    write_file("server/src/main.rs", &server_src_main_rs);
 }
 
 fn gen_proto(model: &Model) -> (String, String) {

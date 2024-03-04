@@ -30,7 +30,6 @@ use proto::{Empty, IndexQuery};
 
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
-// ##PLUGIN_LIBS##
 
 pub struct BicycleService {}
 
@@ -94,17 +93,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let reflection_service = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
+        // ##PLUGIN_DESCRIPTORS##
         .build()
         .unwrap();
 
     println!("Bicycle Server 🚲 listening at: {}", addr);
 
-    // TODO: add tracing and logs (`tracing` crate and `tower` middleware for logging)
-    // TODO: make all instrumentation OTel compatible
-
     Server::builder()
-        // ##PLUGIN_SERVICES##
         .add_service(BicycleServer::new(BicycleService {}))
+        // ##PLUGIN_SERVICES##
         .add_service(reflection_service)
         .serve(addr)
         .await?;

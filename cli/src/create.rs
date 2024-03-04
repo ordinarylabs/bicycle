@@ -75,17 +75,26 @@ pub fn create_with_plugins(schema_path: &str, plugins: Vec<String>) {
 
     if !Path::new("cli").exists() {
         fs::create_dir("cli").unwrap();
+        fs::create_dir("cli/src").unwrap();
 
         let code = r#"
-            fn main() {
-                println!("tmp");
-            }
+fn main() {
+    println!("tmp");
+}
         "#;
 
-        let path = Path::new("cli").join("main.rs");
+        let src_lib_path = Path::new("cli").join("src/lib.rs");
+        let src_main_path = Path::new("cli").join("src/main.rs");
+        let build_path = Path::new("cli").join("build.rs");
 
-        let mut file = File::create(path).unwrap();
-        file.write_all(code.as_bytes()).unwrap();
+        let mut src_lib_file = File::create(src_lib_path).unwrap();
+        src_lib_file.write_all(code.as_bytes()).unwrap();
+
+        let mut src_main_file = File::create(src_main_path).unwrap();
+        src_main_file.write_all(code.as_bytes()).unwrap();
+
+        let mut build_file = File::create(build_path).unwrap();
+        build_file.write_all(code.as_bytes()).unwrap();
     }
 
     println!(
@@ -101,10 +110,7 @@ pub fn create_with_plugins(schema_path: &str, plugins: Vec<String>) {
         .output()
         .unwrap();
 
-    println!(
-        "🛠️  done building server. [{}ms]",
-        now.elapsed().as_millis()
-    );
+    println!("🛠️  done building server. [{}ms]", now.elapsed().as_millis());
 
     if !Path::new("../out").exists() {
         fs::create_dir("../out").unwrap();

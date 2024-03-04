@@ -19,7 +19,7 @@
 # NOT PART OF THE WORKSPACE
 
 [package]
-name = "bicycle_plugin"
+name = "bicycle-plugin"
 version = "0.1.0"
 edition = "2021"
 license = "AGPL-3.0-only"
@@ -30,9 +30,9 @@ homepage = "https://ordinarylabs.io"
 categories = ["database"]
 
 [dependencies]
-tonic = "0.9.2" 
-prost = "0.11.9"
+tonic = "0.10.2" 
+prost = "0.12.3"
 heck = "0.4.1"
 
 [build-dependencies]
-tonic-build = "0.9.2"
+tonic-build = "0.10.2"
