@@ -188,7 +188,7 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
     let mut plugin_deps = "".to_string();
 
     for plugin in plugins {
-        // --plugins crates.io:plugin@0.1.0 path:bicycle-plugin@../plugin git:https:://plugin.com@rev:4c59b707|branch:next|tag:0.1.0
+        // --plugins crates.io:bicycle-plugin@0.1.1 path:bicycle-plugin@../plugin git:plugin-name@https:://plugin.com#rev:4c59b707|branch:next|tag:0.1.0
 
         let source = plugin.split(":").collect::<Vec<&str>>()[0];
         let plugin = plugin.clone().split_off(source.len() + 1);
@@ -204,7 +204,7 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
                 name = split_plugin[0].to_string();
                 let version = split_plugin[1];
 
-                plugin_deps = format!("{}\n{} = {}", plugin_deps, name, version);
+                plugin_deps = format!("{}\n{} = \"{}\"", plugin_deps, name, version);
             }
             "path" => {
                 let split_plugin = plugin.split("@").collect::<Vec<&str>>();
@@ -216,14 +216,16 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
                     "{}\n{} = {{ path = \"../../{}\" }}",
                     plugin_deps, name, path
                 );
-
-                name = split_plugin[0].to_snake_case();
             }
             "git" => {
                 let split_plugin = plugin.split("@").collect::<Vec<&str>>();
 
                 name = split_plugin[0].to_string();
-                let version = split_plugin[1];
+                let git_info = split_plugin[1];
+
+                let split_git_info = git_info.split("#").collect::<Vec<&str>>();
+                let addr = split_git_info[0];
+                let version = split_git_info[1];
 
                 let split_version = version.split(":").collect::<Vec<&str>>();
                 let version_type = split_version[0];
@@ -233,7 +235,7 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
 
                     plugin_deps = format!(
                         "{}\n{} = {{ git = \"{}\", {} = \"{}\" }}",
-                        plugin_deps, name, plugin, version_type, version
+                        plugin_deps, name, addr, version_type, version
                     );
                 } else {
                     println!(
@@ -251,6 +253,8 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
                 should_add_service = false;
             }
         };
+
+        name = name.to_snake_case();
 
         if should_add_service {
             plugin_descriptors = format!(

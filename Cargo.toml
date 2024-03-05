@@ -24,7 +24,7 @@ authors.workspace = true
 description = "Builder tool for the Bicycle project"
 repository.workspace = true
 homepage.workspace = true
-categories.workspace = true
+categories = ["command-line-utilities", "database"]
 readme = "README.md"
 include = ["/cli"]
 
@@ -59,7 +59,7 @@ homepage = "https://ordinarylabs.io"
 repository = "https://github.com/ordinarylabs/bicycle"
 license = "AGPL-3.0-only"
 categories = ["database"]
-version = "0.1.7"
+version = "0.1.8"
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
@@ -76,5 +76,5 @@ rocksdb = "0.21.0"
 tokio-stream = "0.1.14"
 tokio = "1.36.0"
 
-bicycle_core = { path = "./core", version = "0.1.7" }
-bicycle_server = { path = "./server", version = "0.1.7" }
+bicycle_core = { path = "./core", version = "0.1.8" }
+bicycle_server = { path = "./server", version = "0.1.8" }
