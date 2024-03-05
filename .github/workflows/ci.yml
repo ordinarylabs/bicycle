@@ -19,8 +19,6 @@ jobs:
     
     - name: Build Bicycle
       run: cargo build --verbose
-    - name: Build Plugin
-      run: cd ./plugin && cargo build --verbose
     
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
