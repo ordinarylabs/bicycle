@@ -115,7 +115,23 @@ fn write_file(path: &str, content: &str) {
 }
 
 pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
-    let sanitized_workspace_cargo_toml = WORKSPACE_CARGO_TOML.replace("\"cli\", ", "");
+    let mut sanitized_workspace_cargo_toml = WORKSPACE_CARGO_TOML.to_string();
+
+    let workspace_toml = sanitized_workspace_cargo_toml
+        .parse::<toml::Table>()
+        .unwrap();
+
+    if let Some(members) = workspace_toml["workspace"]["members"].as_array() {
+        for member in members {
+            let member = member.to_string();
+
+            if member != "\"core\"" && member != "\"server\"" {
+                sanitized_workspace_cargo_toml =
+                    sanitized_workspace_cargo_toml.replace(&format!("{},", member), "");
+            }
+        }
+    }
+
     write_file("Cargo.toml", &sanitized_workspace_cargo_toml);
 
     create_dir("core");

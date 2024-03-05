@@ -150,6 +150,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bicycle-plugin-echo"
+version = "0.1.0"
+dependencies = [
+ "heck",
+ "prost",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
 name = "bicycle_core"
 version = "0.1.8"
 dependencies = [

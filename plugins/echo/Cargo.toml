@@ -15,12 +15,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-[workspace]
-# NOT PART OF THE WORKSPACE
-
 [package]
-name = "bicycle-plugin"
-version = "0.1.1"
+name = "bicycle-plugin-echo"
+version = "0.1.0"
 edition = "2021"
 license = "AGPL-3.0-only"
 authors = ["sean watters <sean@ordinarylabs.io>"]
@@ -30,9 +27,10 @@ homepage = "https://ordinarylabs.io"
 categories = ["database"]
 
 [dependencies]
-tonic = "0.10.2" 
-prost = "0.12.3"
+tonic = { workspace = true } 
+prost = { workspace = true } 
+
 heck = "0.4.1"
 
 [build-dependencies]
-tonic-build = "0.10.2"
+tonic-build = { workspace = true }

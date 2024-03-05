@@ -23,7 +23,7 @@ Before installing `bicycle` you'll need to have [Rust](https://www.rust-lang.org
 cargo install bicycle
 ```
 
-## CLI Usage
+## Usage
 
 A Bicycle schema is defined in a simple `.proto` file.
 
@@ -52,7 +52,7 @@ Now in the `out/` directory you'll have `server` and `bicycle.proto`.
 
 ### Plugins
 
-Plugins allow you to mix functionality into your Bicycle server. Plugins are just basic Rust libraries that export a gRPC file descriptor, `Server` and `Service` generated with [Tonic](https://github.com/hyperium/tonic); they can be added from the [crates.io](https://crates.io) registry, a local path, or a git repository.
+Plugins allow you to mix functionality into your Bicycle server. Plugins are just basic Rust crates that export a gRPC file descriptor, `Server` and `Service` generated with [Tonic](https://github.com/hyperium/tonic); they can be added from the [crates.io](https://crates.io) registry, a relative path, or a git repository.
 
 Formatting for `--plugins` flag:
 
@@ -61,8 +61,7 @@ Formatting for `--plugins` flag:
 - `git:plugin-name@https:://github.com/user/plugin-name.git#rev:4c59b707|branch:next|tag:0.0.0`
 
 ```bash
-## using the example from /plugin
-bicycle create schema.proto --plugins crates.io:bicycle-plugin@0.1.1
+bicycle create schema.proto --plugins crates.io:bicycle-plugin-echo@0.1.0
 ```
 
 ## Running
