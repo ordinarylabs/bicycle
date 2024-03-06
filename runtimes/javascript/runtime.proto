@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -18,13 +18,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 syntax = "proto3";
-package plugin;
+package bicycle.runtime.javascript;
 
-message Echo {
-  string hiya_buddy = 1;
+message Empty {}
+
+message Name {
+  string name = 1;
 }
 
-service Plugin {
-  rpc PluginEcho(Echo) returns (Echo) {}
-  rpc PluginEchoLoud(Echo) returns (Echo) {}
+message Script {
+  string name = 1;
+  string script = 2;
+}
+
+message Scripts {
+  repeated Script scripts = 1;
+}
+
+message Output {
+  bytes message = 1;
+}
+
+message OneOff {
+  string script = 1;
+  bytes arguments = 2;
+}
+
+message Stored {
+  string name = 1;
+  bytes arguments = 2;
+}
+
+service Runtime {
+  rpc Del(Name) returns (Empty) {}
+  rpc Put(Script) returns (Empty) {}
+
+  rpc List(Empty) returns (Scripts) {}
+
+  rpc RunOneOff(OneOff) returns (Output) {}
+  rpc RunStored(Stored) returns (Output) {}
 }

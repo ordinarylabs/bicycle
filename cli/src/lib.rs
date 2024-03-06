@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -22,28 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pub(crate) const PRECOMPILE_DIR: &'static str = "./__precompile__";
 
 mod create;
-use create::create_with_plugins;
+pub use create::create;
 
 pub(crate) mod gen;
 pub(crate) mod utils;
-
-/// builds a Bicycle database server binary.
-/// outputs to `out/` directory.
-///
-/// NOTE: takes awhile for RocksDB to build.
-///
-/// * `schema_path` - path to the schema.proto file
-pub fn build(schema_path: &str) {
-    create_with_plugins(schema_path, vec![])
-}
-
-/// builds a Bicycle database server binary with plugins.
-/// outputs to `out/` directory.
-///
-/// NOTE: takes awhile for RocksDB to build.
-///
-/// * `schema_path` - path to the schema.proto file
-/// * `plugin_names`
-pub fn build_with_plugins(schema_path: &str, plugin_names: Vec<String>) {
-    create_with_plugins(schema_path, plugin_names)
-}

@@ -1,4 +1,4 @@
-# Bicycle is a database database framework.
+# Bicycle is a framework for managing data.
 
 # Copyright (C) 2024 Ordinary Labs
 
@@ -16,21 +16,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "bicycle-plugin-echo"
-version = "0.1.0"
+name = "bicycle_runtime_javascript"
+version.workspace = true
 edition = "2021"
-license = "AGPL-3.0-only"
-authors = ["sean watters <sean@ordinarylabs.io>"]
-description = "Plugin example for the Bicycle project"
-repository = "https://github.com/ordinarylabs/bicycle"
-homepage = "https://ordinarylabs.io"
-categories = ["database"]
+license.workspace = true
+authors.workspace = true
+description = "JavaScript SPROC runtime for the Bicycle project"
+repository.workspace = true
+homepage.workspace = true
+categories = []
 
 [dependencies]
-tonic = { workspace = true } 
-prost = { workspace = true } 
+deno_core = "0.267.0"
+serde_v8 = "0.176.0"
 
-heck = "0.4.1"
+bicycle_core = { workspace = true }
+
+tonic = { workspace = true } 
+tonic-reflection = { workspace = true }
+
+prost = { workspace = true }
+
+tokio-stream = { workspace = true }
+tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
 
 [build-dependencies]
 tonic-build = { workspace = true }

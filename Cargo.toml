@@ -1,4 +1,4 @@
-# Bicycle is a database database framework.
+# Bicycle is a framework for managing data.
 
 # Copyright (C) 2024 Ordinary Labs
 
@@ -42,6 +42,7 @@ path = "cli/src/main.rs"
 [dependencies]
 heck = "0.4.1"
 toml = "0.8.10"
+clap = { version = "4.5.1", features = ["derive", "cargo"] }
 
 lazy_static = { workspace = true }
 
@@ -53,7 +54,8 @@ tonic-build = { workspace = true }
 members = [
     "core", 
     "server", 
-    "plugins/echo",
+    "engines/rocksdb",
+    "runtimes/javascript",
 ]
 
 [workspace.package]
@@ -63,7 +65,7 @@ homepage = "https://ordinarylabs.io"
 repository = "https://github.com/ordinarylabs/bicycle"
 license = "AGPL-3.0-only"
 categories = ["database"]
-version = "0.1.8"
+version = "0.2.0-alpha.0"
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
@@ -80,5 +82,8 @@ rocksdb = "0.21.0"
 tokio-stream = "0.1.14"
 tokio = "1.36.0"
 
-bicycle_core = { path = "./core", version = "0.1.8" }
-bicycle_server = { path = "./server", version = "0.1.8" }
+bicycle_core = { path = "./core", version = "0.2.0-alpha.0" }
+bicycle_server = { path = "./server", version = "0.2.0-alpha.0" }
+
+engine = { package = "bicycle_engine_rocksdb", path = "./engines/rocksdb", version = "0.2.0-alpha.0" }
+javascript_runtime = { package = "bicycle_runtime_javascript", path = "./runtimes/javascript", version = "0.2.0-alpha.0" }

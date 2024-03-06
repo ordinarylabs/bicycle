@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -23,7 +23,7 @@ fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     tonic_build::configure()
-        .file_descriptor_set_path(out_dir.join("plugin_descriptor.bin"))
-        .compile(&["plugin.proto"], &["."])
+        .file_descriptor_set_path(out_dir.join("runtime_descriptor.bin"))
+        .compile(&["./runtime.proto"], &["."])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 }

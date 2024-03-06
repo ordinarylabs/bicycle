@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 syntax = "proto3";
-package bicycle;
+package bicycle.database;
 
 // ##MODEL_MESSAGES_START##
 message Examples { 

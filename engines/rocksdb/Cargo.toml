@@ -16,20 +16,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "bicycle_core"
+name = "bicycle_engine_rocksdb"
 version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "Protobuf definitions and RocksDB wrapper for the Bicycle project"
+description = "RocksDB database engine for the Bicycle project"
 repository.workspace = true
 homepage.workspace = true
-categories.workspace = true
+categories = ["database"]
 
 [dependencies]
-tonic = { workspace = true }
-prost = { workspace = true }
-engine = { workspace = true }
+rocksdb = "0.21.0"
 
-[build-dependencies]
-tonic-build = { workspace = true }
+lazy_static = { workspace = true }
+prost = { workspace = true }

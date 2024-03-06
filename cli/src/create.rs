@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -30,7 +30,13 @@ use prost_types::FileDescriptorSet;
 use crate::utils::construct_model;
 use crate::{gen, utils::Model, PRECOMPILE_DIR};
 
-pub fn create_with_plugins(schema_path: &str, plugins: Vec<String>) {
+/// builds a Bicycle database server binary and client proto file.
+/// outputs to `out/` directory.
+///
+/// * `schema_path` - path to the schema.proto file
+/// * `engine` - the database engine used
+/// * `runtimes` - list of SPROC runtimes to include in build
+pub fn create(schema_path: &str, engine: &str, runtimes: Vec<String>) {
     if Path::new(PRECOMPILE_DIR).exists() {
         fs::remove_dir_all(PRECOMPILE_DIR).unwrap();
     }
@@ -66,7 +72,7 @@ pub fn create_with_plugins(schema_path: &str, plugins: Vec<String>) {
     let now = Instant::now();
     println!("📁 generating files...");
 
-    gen::gen(models, plugins);
+    gen::gen(models, engine, runtimes);
 
     if let Err(err) = env::set_current_dir(PRECOMPILE_DIR) {
         eprintln!("Failed to change directory: {}", err);
@@ -145,7 +151,7 @@ fn main() {
     let now = Instant::now();
     println!("📁 clearing {}...", PRECOMPILE_DIR);
 
-    fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
+    // fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
 
     println!(
         "📁 cleared {}. [{}ms]",

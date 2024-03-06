@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -17,31 +17,54 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use clap::{arg, command, value_parser, Command};
 use std::env;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let cmd = Command::new("bicycle")
+        .bin_name("bicycle")
+        .version(env!("CARGO_PKG_VERSION"))
+        .subcommand_required(true)
+        .arg_required_else_help(true)
+        .subcommand(
+            command!("create")
+                .about("creates a new server binary and client proto definition.")
+                .arg(
+                    arg!(<SCHEMA_PATH> "path to the schema.proto file")
+                        .value_parser(value_parser!(String)),
+                )
+                .arg_required_else_help(true)
+                .arg(
+                    arg!(--"engine" <ENGINE> "specifies database engine.")
+                        .value_parser(["rocksdb"])
+                        .default_value("rocksdb"),
+                )
+                .arg(
+                    arg!(--"runtime" <RUNTIME> "specifies set of runtimes to include.")
+                        .value_parser(["javascript"]),
+                ),
+        );
 
-    if args.len() < 3 {
-        panic!("Not enough arguments");
-    }
+    let matches = cmd.get_matches();
 
-    let command = &args[1];
-    let schema_path = &args[2];
+    match matches.subcommand() {
+        Some(("create", matches)) => {
+            let schema_path = matches.get_one::<String>("SCHEMA_PATH").expect("required");
 
-    let mut plugins: Vec<String> = vec![];
+            let engine = matches
+                .get_one::<String>("engine")
+                .expect("default value provided");
 
-    if args.len() == 5 && args[3].to_string() == "--plugins".to_string() {
-        let plugins_str = &args[4];
-        let plugins_string = plugins_str.to_string();
+            let mut runtimes = vec![];
 
-        for plugin in plugins_string.split(',').into_iter() {
-            plugins.push(plugin.to_string());
+            if let Some(rts) = matches.get_many::<String>("runtime") {
+                for rt in rts {
+                    runtimes.push(rt.clone());
+                }
+            }
+
+            bicycle::create(schema_path, engine, runtimes)
         }
-    }
-
-    match command.as_str() {
-        "create" => bicycle::build_with_plugins(schema_path, plugins),
-        _ => panic!("invalid command"),
+        _ => unreachable!(),
     }
 }

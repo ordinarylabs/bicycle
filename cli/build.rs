@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -17,92 +17,161 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::fs::{copy, create_dir, metadata};
-use std::io;
+use std::fs::{copy, create_dir};
+use std::path::Path;
 
-fn main() -> io::Result<()> {
-    let tmp_path = concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp");
+fn main() -> std::io::Result<()> {
+    let manifest_path = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let tmp_path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp"));
 
-    if !metadata(tmp_path).is_ok() {
+    // BASE
+
+    if !tmp_path.exists() {
         create_dir(tmp_path)?;
     }
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/Freight.toml"),
+        manifest_path.join("Cargo.toml"),
+        tmp_path.join("Freight.toml"),
     )?;
 
-    let tmp_core_path = concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core");
+    // CORE
 
-    if !metadata(tmp_core_path).is_ok() {
+    let tmp_core_path = tmp_path.join("core");
+
+    if !tmp_core_path.exists() {
         create_dir(tmp_core_path)?;
     }
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/core/build.rs"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core/build.rs"),
+        manifest_path.join("core/build.rs"),
+        tmp_path.join("core/build.rs"),
     )?;
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/core/Cargo.toml"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core/Freight.toml"),
+        manifest_path.join("core/Cargo.toml"),
+        tmp_path.join("core/Freight.toml"),
     )?;
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/core/bicycle.proto"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core/bicycle.proto"),
+        manifest_path.join("core/bicycle.proto"),
+        tmp_path.join("core/bicycle.proto"),
     )?;
 
-    let tmp_core_src_path = concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core/src");
+    let tmp_core_src_path = tmp_path.join("core/src");
 
-    if !metadata(tmp_core_src_path).is_ok() {
+    if !tmp_core_src_path.exists() {
         create_dir(tmp_core_src_path)?;
     }
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/core/src/engine.rs"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core/src/engine.rs"),
+        manifest_path.join("core/src/lib.rs"),
+        tmp_path.join("core/src/lib.rs"),
     )?;
 
-    copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/core/src/lib.rs"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core/src/lib.rs"),
-    )?;
+    let tmp_core_src_models_path = tmp_path.join("core/src/models");
 
-    let tmp_core_src_models_path = concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/core/src/models");
-
-    if !metadata(tmp_core_src_models_path).is_ok() {
+    if !tmp_core_src_models_path.exists() {
         create_dir(tmp_core_src_models_path)?;
     }
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/core/src/models/example.rs"),
-        concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/cli/tmp/core/src/models/example.rs"
-        ),
+        manifest_path.join("core/src/models/example.rs"),
+        tmp_path.join("core/src/models/example.rs"),
     )?;
 
-    let tmp_server_path = concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/server");
+    // ENGINES
 
-    if !metadata(tmp_server_path).is_ok() {
+    let tmp_engines_path = tmp_path.join("engines");
+
+    if !tmp_engines_path.exists() {
+        create_dir(tmp_engines_path)?;
+    }
+
+    let tmp_engines_rocksdb_path = tmp_path.join("engines/rocksdb");
+
+    if !tmp_engines_rocksdb_path.exists() {
+        create_dir(tmp_engines_rocksdb_path)?;
+    }
+
+    copy(
+        manifest_path.join("engines/rocksdb/Cargo.toml"),
+        tmp_path.join("engines/rocksdb/Freight.toml"),
+    )?;
+
+    let tmp_engines_rocksdb_src_path = tmp_path.join("engines/rocksdb/src");
+
+    if !tmp_engines_rocksdb_src_path.exists() {
+        create_dir(tmp_engines_rocksdb_src_path)?;
+    }
+
+    copy(
+        manifest_path.join("engines/rocksdb/src/lib.rs"),
+        tmp_path.join("engines/rocksdb/src/lib.rs"),
+    )?;
+
+    // SERVER
+
+    let tmp_server_path = tmp_path.join("server");
+
+    if !tmp_server_path.exists() {
         create_dir(tmp_server_path)?;
     }
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/server/Cargo.toml"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/server/Freight.toml"),
+        manifest_path.join("server/Cargo.toml"),
+        tmp_path.join("server/Freight.toml"),
     )?;
 
-    let tmp_server_src_path = concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/server/src");
+    let tmp_server_src_path = tmp_path.join("server/src");
 
-    if !metadata(tmp_server_src_path).is_ok() {
+    if !tmp_server_src_path.exists() {
         create_dir(tmp_server_src_path)?;
     }
 
     copy(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/server/src/main.rs"),
-        concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/server/src/main.rs"),
+        manifest_path.join("server/src/main.rs"),
+        tmp_path.join("server/src/main.rs"),
+    )?;
+
+    // RUNTIMES
+
+    let tmp_runtimes_path = tmp_path.join("runtimes");
+
+    if !tmp_runtimes_path.exists() {
+        create_dir(tmp_runtimes_path)?;
+    }
+
+    let tmp_runtimes_javascript_path = tmp_path.join("runtimes/javascript");
+
+    if !tmp_runtimes_javascript_path.exists() {
+        create_dir(tmp_runtimes_javascript_path)?;
+    }
+
+    copy(
+        manifest_path.join("runtimes/javascript/build.rs"),
+        tmp_path.join("runtimes/javascript/build.rs"),
+    )?;
+
+    copy(
+        manifest_path.join("runtimes/javascript/Cargo.toml"),
+        tmp_path.join("runtimes/javascript/Freight.toml"),
+    )?;
+
+    copy(
+        manifest_path.join("runtimes/javascript/runtime.proto"),
+        tmp_path.join("runtimes/javascript/runtime.proto"),
+    )?;
+
+    let tmp_runtimes_javascript_src_path = tmp_path.join("runtimes/javascript/src");
+
+    if !tmp_runtimes_javascript_src_path.exists() {
+        create_dir(tmp_runtimes_javascript_src_path)?;
+    }
+
+    copy(
+        manifest_path.join("runtimes/javascript/src/lib.rs"),
+        tmp_path.join("runtimes/javascript/src/lib.rs"),
     )?;
 
     Ok(())

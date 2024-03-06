@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -26,8 +26,12 @@ use lazy_static::lazy_static;
 
 use crate::{utils::Model, PRECOMPILE_DIR};
 
+// BASE
+
 const WORKSPACE_CARGO_TOML: &'static str =
     include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/cli/tmp/Freight.toml"));
+
+// CORE
 
 const CORE_BUILD_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -45,14 +49,23 @@ const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/core/src/models/example.rs"
 ));
-const CORE_SRC_ENGINE_RS: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/core/src/engine.rs"
-));
 const CORE_SRC_LIB_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/core/src/lib.rs"
 ));
+
+// ENGINES
+
+const ENGINES_ROCKSDB_CARGO_TOML: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/engines/rocksdb/Freight.toml"
+));
+const ENGINES_ROCKSDB_SRC_LIB_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/engines/rocksdb/src/lib.rs"
+));
+
+// SERVER
 
 const SERVER_CARGO_TOML: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -61,6 +74,25 @@ const SERVER_CARGO_TOML: &'static str = include_str!(concat!(
 const SERVER_SRC_MAIN_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/server/src/main.rs"
+));
+
+// RUNTIMES
+
+const RUNTIMES_JAVASCRIPT_CARGO_TOML: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/runtimes/javascript/Freight.toml"
+));
+const RUNTIMES_JAVASCRIPT_BUILD_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/runtimes/javascript/build.rs"
+));
+const RUNTIMES_JAVASCRIPT_RUNTIME_PROTO: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/runtimes/javascript/runtime.proto"
+));
+const RUNTIMES_JAVASCRIPT_SRC_LIB_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/runtimes/javascript/src/lib.rs"
 ));
 
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
@@ -114,38 +146,30 @@ fn write_file(path: &str, content: &str) {
     file.write_all(content.as_bytes()).unwrap();
 }
 
-pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
-    let mut sanitized_workspace_cargo_toml = WORKSPACE_CARGO_TOML.to_string();
+pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
+    // BASE
+    write_file("Cargo.toml", WORKSPACE_CARGO_TOML);
 
-    let workspace_toml = sanitized_workspace_cargo_toml
-        .parse::<toml::Table>()
-        .unwrap();
-
-    if let Some(members) = workspace_toml["workspace"]["members"].as_array() {
-        for member in members {
-            let member = member.to_string();
-
-            if member != "\"core\"" && member != "\"server\"" {
-                sanitized_workspace_cargo_toml =
-                    sanitized_workspace_cargo_toml.replace(&format!("{},", member), "");
-            }
-        }
-    }
-
-    write_file("Cargo.toml", &sanitized_workspace_cargo_toml);
-
+    // CORE
     create_dir("core");
     write_file("core/build.rs", CORE_BUILD_RS);
     write_file("core/Cargo.toml", CORE_CARGO_TOML);
 
     create_dir("core/src");
     write_file("core/src/lib.rs", CORE_SRC_LIB_RS);
-    write_file("core/src/engine.rs", CORE_SRC_ENGINE_RS);
 
     create_dir("core/src/models");
 
-    create_dir("server");
+    // ENGINES
+    create_dir("engines");
+    create_dir("engines/rocksdb");
+    write_file("engines/rocksdb/Cargo.toml", ENGINES_ROCKSDB_CARGO_TOML);
 
+    create_dir("engines/rocksdb/src");
+    write_file("engines/rocksdb/src/lib.rs", ENGINES_ROCKSDB_SRC_LIB_RS);
+
+    // SERVER
+    create_dir("server");
     create_dir("server/src");
 
     let mut rpc_block = "".to_string();
@@ -192,107 +216,64 @@ pub(crate) fn gen(models: Vec<Model>, plugins: Vec<String>) {
         );
     }
 
-    write_file("core/src/models/mod.rs", &core_models_mod_rs);
-
     let proto = CORE_BICYCLE_PROTO
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
+
+    // CORE
+    write_file("core/src/models/mod.rs", &core_models_mod_rs);
     write_file("core/bicycle.proto", &proto);
 
-    let mut plugin_descriptors = "".to_string();
-    let mut plugin_services = "".to_string();
-    let mut plugin_deps = "".to_string();
+    // RUNTIMES
+    create_dir("runtimes");
+    create_dir("runtimes/javascript");
+    write_file(
+        "runtimes/javascript/Cargo.toml",
+        RUNTIMES_JAVASCRIPT_CARGO_TOML,
+    );
+    write_file("runtimes/javascript/build.rs", RUNTIMES_JAVASCRIPT_BUILD_RS);
+    write_file(
+        "runtimes/javascript/runtime.proto",
+        RUNTIMES_JAVASCRIPT_RUNTIME_PROTO,
+    );
 
-    for plugin in plugins {
-        // --plugins crates.io:bicycle-plugin@0.1.1 path:bicycle-plugin@../plugin git:plugin-name@https:://plugin.com#rev:4c59b707|branch:next|tag:0.1.0
+    create_dir("runtimes/javascript/src");
+    write_file(
+        "runtimes/javascript/src/lib.rs",
+        RUNTIMES_JAVASCRIPT_SRC_LIB_RS,
+    );
 
-        let source = plugin.split(":").collect::<Vec<&str>>()[0];
-        let plugin = plugin.clone().split_off(source.len() + 1);
+    let mut runtime_descriptors = "".to_string();
+    let mut runtime_services = "".to_string();
+    let mut runtime_deps = "".to_string();
 
-        let mut name = "".to_string();
-
-        let mut should_add_service = true;
-
-        match source {
-            "crates.io" => {
-                let split_plugin = plugin.split("@").collect::<Vec<&str>>();
-
-                name = split_plugin[0].to_string();
-                let version = split_plugin[1];
-
-                plugin_deps = format!("{}\n{} = \"{}\"", plugin_deps, name, version);
-            }
-            "path" => {
-                let split_plugin = plugin.split("@").collect::<Vec<&str>>();
-
-                name = split_plugin[0].to_string();
-                let path = split_plugin[1];
-
-                plugin_deps = format!(
-                    "{}\n{} = {{ path = \"../../{}\" }}",
-                    plugin_deps, name, path
-                );
-            }
-            "git" => {
-                let split_plugin = plugin.split("@").collect::<Vec<&str>>();
-
-                name = split_plugin[0].to_string();
-                let git_info = split_plugin[1];
-
-                let split_git_info = git_info.split("#").collect::<Vec<&str>>();
-                let addr = split_git_info[0];
-                let version = split_git_info[1];
-
-                let split_version = version.split(":").collect::<Vec<&str>>();
-                let version_type = split_version[0];
-
-                if version_type == "rev" || version_type == "branch" || version_type == "tag" {
-                    let version = split_version[1];
-
-                    plugin_deps = format!(
-                        "{}\n{} = {{ git = \"{}\", {} = \"{}\" }}",
-                        plugin_deps, name, addr, version_type, version
-                    );
-                } else {
-                    println!(
-                        "git version type \"{}\" not supported. try \"rev\", \"branch\" or \"tag\"",
-                        version_type
-                    );
-                    should_add_service = false;
-                }
-            }
-            _ => {
-                println!(
-                    "unsupported plugin source \"{}\". try \"crates.io\", \"git\" or \"path\"",
-                    source
-                );
-                should_add_service = false;
-            }
-        };
-
-        name = name.to_snake_case();
-
-        if should_add_service {
-            plugin_descriptors = format!(
-                r#"{}.register_encoded_file_descriptor_set({}::FILE_DESCRIPTOR_SET)
-            "#,
-                plugin_descriptors, name
-            );
-            plugin_services = format!(
-                r#"{}.add_service({}::Server::new({}::Service {{}}))
+    for runtime in runtimes {
+        runtime_descriptors = format!(
+            r#"{}.register_encoded_file_descriptor_set({}_runtime::FILE_DESCRIPTOR_SET)
         "#,
-                plugin_services, name, name,
-            );
-        }
+            runtime_descriptors, runtime
+        );
+        runtime_services = format!(
+            r#"{}.add_service({}_runtime::RuntimeServer::new({}_runtime::RuntimeService::new()?))
+        "#,
+            runtime_services, runtime, runtime,
+        );
+
+        runtime_deps = format!(
+            r#"
+{}_runtime = {{ workspace = true }}
+"#,
+            runtime
+        );
     }
 
-    let server_cargo_toml = SERVER_CARGO_TOML.replace("##PLUGIN_DEPS##", &plugin_deps);
+    let server_cargo_toml = SERVER_CARGO_TOML.replace("##RUNTIME_DEPS##", &runtime_deps);
     write_file("server/Cargo.toml", &server_cargo_toml);
 
     let server_src_main_rs = SERVER_SRC_MAIN_RS
         .replace(&SERVER_HANDLERS.to_string(), &server_handlers_block)
-        .replace("// ##PLUGIN_DESCRIPTORS##", &plugin_descriptors)
-        .replace("// ##PLUGIN_SERVICES##", &plugin_services);
+        .replace("// ##RUNTIME_DESCRIPTORS##", &runtime_descriptors)
+        .replace("// ##RUNTIME_SERVICES##", &runtime_services);
     write_file("server/src/main.rs", &server_src_main_rs);
 }
 

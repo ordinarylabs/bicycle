@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -16,6 +16,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+use std::error::Error;
 
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
@@ -88,12 +90,12 @@ impl Bicycle for BicycleService {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "[::0]:50051".parse()?;
 
     let reflection_service = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
-        // ##PLUGIN_DESCRIPTORS##
+        // ##RUNTIME_DESCRIPTORS##
         .build()
         .unwrap();
 
@@ -101,7 +103,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .add_service(BicycleServer::new(BicycleService {}))
-        // ##PLUGIN_SERVICES##
+        // ##RUNTIME_SERVICES##
         .add_service(reflection_service)
         .serve(addr)
         .await?;

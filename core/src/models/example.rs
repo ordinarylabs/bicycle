@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -22,7 +22,7 @@ use prost::Message;
 use crate::proto;
 use proto::{index_query::Expression, IndexQuery};
 
-use crate::engine::{
+use engine::{
     batch_put, delete_begins_with, delete_eq, delete_gte, delete_lte, get_begins_with, get_eq,
     get_gte, get_lte, put,
 };
@@ -31,34 +31,45 @@ const MODEL_NAME: &'static str = "EXAMPLE";
 
 pub fn get_examples_by_pk(query: IndexQuery) -> Result<Vec<proto::Example>, tonic::Status> {
     if let Some(expression) = query.expression {
-        match expression {
-            Expression::Eq(val) => return get_eq::<proto::Example>(MODEL_NAME, val),
-            Expression::Gte(val) => return get_gte::<proto::Example>(MODEL_NAME, val),
-            Expression::Lte(val) => return get_lte::<proto::Example>(MODEL_NAME, val),
-            Expression::BeginsWith(val) => {
-                return get_begins_with::<proto::Example>(MODEL_NAME, val)
-            }
-        }
-    }
+        let res = match expression {
+            Expression::Eq(val) => get_eq::<proto::Example>(MODEL_NAME, val),
+            Expression::Gte(val) => get_gte::<proto::Example>(MODEL_NAME, val),
+            Expression::Lte(val) => get_lte::<proto::Example>(MODEL_NAME, val),
+            Expression::BeginsWith(val) => get_begins_with::<proto::Example>(MODEL_NAME, val),
+        };
 
-    Err(tonic::Status::internal("invalid expression"))
+        match res {
+            Ok(res) => Ok(res),
+            Err(err) => Err(tonic::Status::internal(err.to_string())),
+        }
+    } else {
+        Err(tonic::Status::internal("invalid expression"))
+    }
 }
 
 pub fn delete_examples_by_pk(query: IndexQuery) -> Result<(), tonic::Status> {
     if let Some(expression) = query.expression {
-        match expression {
-            Expression::Eq(val) => return delete_eq(MODEL_NAME, val),
-            Expression::Gte(val) => return delete_gte(MODEL_NAME, val),
-            Expression::Lte(val) => return delete_lte(MODEL_NAME, val),
-            Expression::BeginsWith(val) => return delete_begins_with(MODEL_NAME, val),
-        }
-    }
+        let res = match expression {
+            Expression::Eq(val) => delete_eq(MODEL_NAME, val),
+            Expression::Gte(val) => delete_gte(MODEL_NAME, val),
+            Expression::Lte(val) => delete_lte(MODEL_NAME, val),
+            Expression::BeginsWith(val) => delete_begins_with(MODEL_NAME, val),
+        };
 
-    Err(tonic::Status::internal("invalid expression"))
+        match res {
+            Ok(res) => Ok(res),
+            Err(err) => Err(tonic::Status::internal(err.to_string())),
+        }
+    } else {
+        Err(tonic::Status::internal("invalid expression"))
+    }
 }
 
 pub fn put_example(example: proto::Example) -> Result<(), tonic::Status> {
-    put(MODEL_NAME, example.pk.clone(), example.encode_to_vec())
+    match put(MODEL_NAME, example.pk.clone(), example.encode_to_vec()) {
+        Ok(res) => Ok(res),
+        Err(err) => Err(tonic::Status::internal(err.to_string())),
+    }
 }
 
 pub fn batch_put_examples(examples: proto::Examples) -> Result<(), tonic::Status> {
@@ -68,5 +79,8 @@ pub fn batch_put_examples(examples: proto::Examples) -> Result<(), tonic::Status
         params.push((example.pk.clone(), example.encode_to_vec()));
     }
 
-    batch_put(MODEL_NAME, params)
+    match batch_put(MODEL_NAME, params) {
+        Ok(res) => Ok(res),
+        Err(err) => Err(tonic::Status::internal(err.to_string())),
+    }
 }

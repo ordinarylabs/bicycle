@@ -17,12 +17,27 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod models;
+use std::error::Error;
+use tonic::transport::Server;
 
-#[allow(non_snake_case)]
-pub mod proto {
-    tonic::include_proto!("bicycle.database");
+use bicycle_runtime_javascript::{RuntimeServer, RuntimeService, FILE_DESCRIPTOR_SET};
 
-    pub const FILE_DESCRIPTOR_SET: &[u8] =
-        tonic::include_file_descriptor_set!("bicycle_descriptor");
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let addr = "[::0]:50051".parse()?;
+
+    let reflection_service = tonic_reflection::server::Builder::configure()
+        .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
+        .build()
+        .unwrap();
+
+    println!("Runtime Server 🚀 listening at: {}", addr);
+
+    Server::builder()
+        .add_service(RuntimeServer::new(RuntimeService::new()?))
+        .add_service(reflection_service)
+        .serve(addr)
+        .await?;
+
+    Ok(())
 }
