@@ -24,6 +24,11 @@ use std::io::Write;
 use std::path::Path;
 use std::sync::RwLock;
 
+use bicycle_core::models;
+use bicycle_core::proto as bicycle_proto;
+use prost::Message;
+
+use deno_core::{anyhow, extension, op2, v8, JsRuntime, RuntimeOptions};
 use tonic::{Request, Response, Status};
 
 mod proto {
@@ -35,14 +40,71 @@ pub const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("runt
 pub use proto::runtime_server::RuntimeServer;
 use proto::{runtime_server::Runtime, Empty, Name, OneOff, Output, Script, Scripts, Stored};
 
-use deno_core::{v8, JsRuntime, RuntimeOptions};
-
 const SCRIPT_DIR: &'static str = "__bicycle.runtime.javascript__";
 
-fn run_js(src: &str, _arguments: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
-    let mut js_runtime = JsRuntime::new(RuntimeOptions::default());
+// ##MODEL_OPS_START##
+#[op2]
+#[arraybuffer]
+fn op_get_examples_by_pk(#[arraybuffer] index_query: &[u8]) -> Result<Vec<u8>, anyhow::Error> {
+    let index_query = bicycle_proto::IndexQuery::decode(index_query)?;
+    let examples = models::example::get_examples_by_pk(index_query)?;
 
-    let result = js_runtime.execute_script("<script>", format!("{};main()", src))?;
+    Ok(bicycle_proto::Examples { examples }.encode_to_vec())
+}
+
+#[op2(fast)]
+fn op_delete_examples_by_pk(#[arraybuffer] index_query: &[u8]) -> Result<(), anyhow::Error> {
+    let index_query = bicycle_proto::IndexQuery::decode(index_query)?;
+    models::example::delete_examples_by_pk(index_query)?;
+
+    Ok(())
+}
+
+#[op2(fast)]
+fn op_put_example(#[arraybuffer] example: &[u8]) -> Result<(), anyhow::Error> {
+    let example = bicycle_proto::Example::decode(example)?;
+    models::example::put_example(example)?;
+
+    Ok(())
+}
+
+#[op2(fast)]
+fn op_batch_put_examples(#[arraybuffer] examples: &[u8]) -> Result<(), anyhow::Error> {
+    let example = bicycle_proto::Examples::decode(examples)?;
+    models::example::batch_put_examples(example)?;
+
+    Ok(())
+}
+
+extension!(
+    example_extension,
+    ops = [
+        op_get_examples_by_pk,
+        op_delete_examples_by_pk,
+        op_put_example,
+        op_batch_put_examples
+    ],
+    js = ["src/models/example.js"]
+);
+// ##MODEL_OPS_END##
+
+fn run_js(src: &str, arguments: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
+    let extensions = vec![
+        // ##MODEL_EXTENSIONS_START##
+        example_extension::init_ops_and_esm(),
+        // ##MODEL_EXTENSIONS_END##
+    ];
+
+    let mut js_runtime = JsRuntime::new(RuntimeOptions {
+        extensions,
+        ..Default::default()
+    });
+
+    let result = js_runtime.execute_script(
+        "<script>",
+        // !! this implementation is ridiculous but works for now
+        format!("{};main(new Uint8Array({:?}))", src, arguments),
+    )?;
 
     let scope = &mut js_runtime.handle_scope();
     let local = v8::Local::new(scope, result);
