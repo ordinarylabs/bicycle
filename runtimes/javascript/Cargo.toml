@@ -36,6 +36,7 @@ tonic = { workspace = true }
 tonic-reflection = { workspace = true }
 
 prost = { workspace = true }
+prost-types = { workspace = true }
 
 tokio-stream = { workspace = true }
 tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }

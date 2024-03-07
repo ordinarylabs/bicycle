@@ -45,7 +45,7 @@ const CORE_BICYCLE_PROTO: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/core/bicycle.proto"
 ));
-const CORE_SRC_MODELS_MOD_RS: &'static str = include_str!(concat!(
+const CORE_SRC_MODELS_EXAMPLE_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/core/src/models/example.rs"
 ));
@@ -94,6 +94,10 @@ const RUNTIMES_JAVASCRIPT_SRC_LIB_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/runtimes/javascript/src/lib.rs"
 ));
+const RUNTIMES_JAVASCRIPT_SRC_MODELS_EXAMPLE_JS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/runtimes/javascript/src/models/example.js"
+));
 
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
     let start = match content.find(from) {
@@ -129,6 +133,16 @@ lazy_static! {
         SERVER_SRC_MAIN_RS,
         "##START_HANDLERS##",
         Some("##END_HANDLERS##")
+    );
+    static ref RUNTIMES_JAVASCRIPT_OPS: String = get_between(
+        RUNTIMES_JAVASCRIPT_SRC_LIB_RS,
+        "##START_OPS##",
+        Some("##END_OPS##")
+    );
+    static ref RUNTIMES_JAVASCRIPT_EXTENSIONS: String = get_between(
+        RUNTIMES_JAVASCRIPT_SRC_LIB_RS,
+        "##START_EXTENSIONS##",
+        Some("##END_EXTENSIONS##")
     );
 }
 
@@ -172,12 +186,31 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
     create_dir("server");
     create_dir("server/src");
 
+    // RUNTIMES
+    create_dir("runtimes");
+    create_dir("runtimes/javascript");
+    write_file(
+        "runtimes/javascript/Cargo.toml",
+        RUNTIMES_JAVASCRIPT_CARGO_TOML,
+    );
+    write_file("runtimes/javascript/build.rs", RUNTIMES_JAVASCRIPT_BUILD_RS);
+    write_file(
+        "runtimes/javascript/runtime.proto",
+        RUNTIMES_JAVASCRIPT_RUNTIME_PROTO,
+    );
+
+    create_dir("runtimes/javascript/src");
+    create_dir("runtimes/javascript/src/models");
+
     let mut rpc_block = "".to_string();
     let mut messages_block = "".to_string();
 
     let mut core_models_mod_rs = "".to_string();
 
     let mut server_handlers_block = "".to_string();
+
+    let mut runtimes_javascript_ops_block = "".to_string();
+    let mut runtimes_javascript_extensions_block = "".to_string();
 
     for (i, model) in models.iter().enumerate() {
         let (rpc_chunk, messages_chunk) = gen_proto(&model);
@@ -201,7 +234,8 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
             model.name.to_snake_case()
         );
 
-        let model_file_content = replace_model_name(&model, &CORE_SRC_MODELS_MOD_RS.to_string());
+        let model_file_content =
+            replace_model_name(&model, &CORE_SRC_MODELS_EXAMPLE_RS.to_string());
 
         write_file(
             &format!("core/src/models/{}.rs", model.name.to_snake_case()),
@@ -214,33 +248,57 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
             if i == 0 { "" } else { "\n" },
             replace_model_name(&model, &SERVER_HANDLERS)
         );
+
+        let runtimes_javascript_model_example_content = replace_model_name(
+            &model,
+            &RUNTIMES_JAVASCRIPT_SRC_MODELS_EXAMPLE_JS.to_string(),
+        );
+
+        write_file(
+            &format!(
+                "runtimes/javascript/src/models/{}.js",
+                model.name.to_snake_case()
+            ),
+            &runtimes_javascript_model_example_content,
+        );
+
+        runtimes_javascript_ops_block = format!(
+            "{}{}{}",
+            runtimes_javascript_ops_block,
+            if i == 0 { "" } else { "\n" },
+            replace_model_name(&model, &RUNTIMES_JAVASCRIPT_OPS)
+        );
+
+        runtimes_javascript_extensions_block = format!(
+            "{}{}{}",
+            runtimes_javascript_extensions_block,
+            if i == 0 { "" } else { "\n" },
+            replace_model_name(&model, &RUNTIMES_JAVASCRIPT_EXTENSIONS)
+        );
     }
 
+    // CORE
     let proto = CORE_BICYCLE_PROTO
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
 
-    // CORE
     write_file("core/src/models/mod.rs", &core_models_mod_rs);
     write_file("core/bicycle.proto", &proto);
 
     // RUNTIMES
-    create_dir("runtimes");
-    create_dir("runtimes/javascript");
-    write_file(
-        "runtimes/javascript/Cargo.toml",
-        RUNTIMES_JAVASCRIPT_CARGO_TOML,
-    );
-    write_file("runtimes/javascript/build.rs", RUNTIMES_JAVASCRIPT_BUILD_RS);
-    write_file(
-        "runtimes/javascript/runtime.proto",
-        RUNTIMES_JAVASCRIPT_RUNTIME_PROTO,
-    );
+    let runtimes_javascript_src_lib_rs = RUNTIMES_JAVASCRIPT_SRC_LIB_RS
+        .replace(
+            &RUNTIMES_JAVASCRIPT_OPS.to_string(),
+            &runtimes_javascript_ops_block,
+        )
+        .replace(
+            &RUNTIMES_JAVASCRIPT_EXTENSIONS.to_string(),
+            &runtimes_javascript_extensions_block,
+        );
 
-    create_dir("runtimes/javascript/src");
     write_file(
         "runtimes/javascript/src/lib.rs",
-        RUNTIMES_JAVASCRIPT_SRC_LIB_RS,
+        &runtimes_javascript_src_lib_rs,
     );
 
     let mut runtime_descriptors = "".to_string();

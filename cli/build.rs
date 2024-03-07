@@ -174,5 +174,16 @@ fn main() -> std::io::Result<()> {
         tmp_path.join("runtimes/javascript/src/lib.rs"),
     )?;
 
+    let tmp_runtimes_javascript_src_models_path = tmp_path.join("runtimes/javascript/src/models");
+
+    if !tmp_runtimes_javascript_src_models_path.exists() {
+        create_dir(tmp_runtimes_javascript_src_models_path)?;
+    }
+
+    copy(
+        manifest_path.join("runtimes/javascript/src/models/example.js"),
+        tmp_path.join("runtimes/javascript/src/models/example.js"),
+    )?;
+
     Ok(())
 }

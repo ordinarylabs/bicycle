@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
 [![dependency status](https://deps.rs/repo/github/ordinarylabs/bicycle/status.svg)](https://deps.rs/repo/github/ordinarylabs/bicycle)
 
-Bicycle is a framework for defining database schemas with protobuf such that access patterns are generated as code and compiled into the database server itself. The goal is to reduce bandwidth and the overhead of query/response parsing at run time by using a binary serialization format and empowering the compiler do query planning ahead of time.
+Bicycle is a framework for defining database schemas with protobuf such that access patterns are generated as code and compiled into the database server itself. The goal is to reduce the overhead of query/response parsing at run time by using a binary serialization format and empowering the compiler do query planning ahead of time.
 
 ## Why the name?
 

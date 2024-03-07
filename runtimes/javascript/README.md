@@ -3,12 +3,8 @@
 Example SPROC script
 
 ```javascript
-function main(message) {
-    if (!(message instanceof Uint8Array)) {
-        throw new Error("`message` will always be a Uint8Array");
-    }
-
-    // must always return a Uint8Array
-    return new Uint8Array([1, 2, 3, 4]);
+// must always export a single `main()` function
+function main(args) { // args is a deserialized JSON blob
+    return { ...args }; // must always return an object that will be serialized to JSON
 }
 ```

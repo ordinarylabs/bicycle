@@ -38,11 +38,11 @@ mod proto {
 pub const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("runtime_descriptor");
 
 pub use proto::runtime_server::RuntimeServer;
-use proto::{runtime_server::Runtime, Empty, Name, OneOff, Output, Script, Scripts, Stored};
+use proto::{runtime_server::Runtime, Empty, Json, Name, OneOff, Script, Scripts, Stored};
 
 const SCRIPT_DIR: &'static str = "__bicycle.runtime.javascript__";
 
-// ##MODEL_OPS_START##
+// ##START_OPS##
 #[op2]
 #[arraybuffer]
 fn op_get_examples_by_pk(#[arraybuffer] index_query: &[u8]) -> Result<Vec<u8>, anyhow::Error> {
@@ -86,13 +86,13 @@ extension!(
     ],
     js = ["src/models/example.js"]
 );
-// ##MODEL_OPS_END##
+// ##END_OPS##
 
-fn run_js(src: &str, arguments: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
+fn run_js(src: &str, args: &str) -> Result<String, Box<dyn Error>> {
     let extensions = vec![
-        // ##MODEL_EXTENSIONS_START##
+        // ##START_EXTENSIONS##
         example_extension::init_ops_and_esm(),
-        // ##MODEL_EXTENSIONS_END##
+        // ##END_EXTENSIONS##
     ];
 
     let mut js_runtime = JsRuntime::new(RuntimeOptions {
@@ -102,16 +102,15 @@ fn run_js(src: &str, arguments: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
 
     let result = js_runtime.execute_script(
         "<script>",
-        // !! this implementation is ridiculous but works for now
-        format!("{};main(new Uint8Array({:?}))", src, arguments),
+        format!("{};JSON.stringify(main(JSON.parse('{}')))", src, args),
     )?;
 
     let scope = &mut js_runtime.handle_scope();
     let local = v8::Local::new(scope, result);
 
-    let buf: serde_v8::JsBuffer = serde_v8::from_v8(scope, local)?;
+    let json: String = serde_v8::from_v8(scope, local)?;
 
-    Ok(buf.to_vec())
+    Ok(json)
 }
 
 pub struct RuntimeService {
@@ -183,21 +182,21 @@ impl Runtime for RuntimeService {
         Ok(Response::new(Scripts { scripts }))
     }
 
-    async fn run_one_off(&self, req: Request<OneOff>) -> Result<Response<Output>, Status> {
-        let OneOff { script, arguments } = req.into_inner();
+    async fn run_one_off(&self, req: Request<OneOff>) -> Result<Response<Json>, Status> {
+        let OneOff { script, args } = req.into_inner();
 
-        match run_js(&script, &arguments) {
-            Ok(message) => Ok(Response::new(Output { message })),
+        match run_js(&script, &args) {
+            Ok(json) => Ok(Response::new(Json { json })),
             Err(err) => Err(Status::internal(err.to_string())),
         }
     }
 
-    async fn run_stored(&self, req: Request<Stored>) -> Result<Response<Output>, Status> {
-        let Stored { name, arguments } = req.into_inner();
+    async fn run_stored(&self, req: Request<Stored>) -> Result<Response<Json>, Status> {
+        let Stored { name, args } = req.into_inner();
 
         if let Some(script) = self.scripts.read().unwrap().get(&name) {
-            match run_js(script, &arguments) {
-                Ok(message) => Ok(Response::new(Output { message })),
+            match run_js(script, &args) {
+                Ok(json) => Ok(Response::new(Json { json })),
                 Err(err) => Err(Status::internal(err.to_string())),
             }
         } else {

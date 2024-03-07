@@ -20,6 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 syntax = "proto3";
 package bicycle.runtime.javascript;
 
+// TODO: use the Value type, but figure out an ergonomic 
+// TODO: way to still pass between JS and Rust
+// TODO: will probably just need to package the Value serde
+// TODO: js code into the Deno runtime and use that instead of
+// TODO: the JSON.stringify(JSON.parse()) B.S.
+
+// import "google/protobuf/struct.proto";
+
 message Empty {}
 
 message Name {
@@ -35,18 +43,20 @@ message Scripts {
   repeated Script scripts = 1;
 }
 
-message Output {
-  bytes message = 1;
-}
-
 message OneOff {
   string script = 1;
-  bytes arguments = 2;
+  string args = 2;
+  // google.protobuf.Value args = 2;
 }
 
 message Stored {
   string name = 1;
-  bytes arguments = 2;
+  string args = 2;
+  // google.protobuf.Value args = 2;
+}
+
+message Json {
+  string json = 1;
 }
 
 service Runtime {
@@ -55,6 +65,8 @@ service Runtime {
 
   rpc List(Empty) returns (Scripts) {}
 
-  rpc RunOneOff(OneOff) returns (Output) {}
-  rpc RunStored(Stored) returns (Output) {}
+  rpc RunOneOff(OneOff) returns (Json) {}
+  rpc RunStored(Stored) returns (Json) {}
+  // rpc RunOneOff(OneOff) returns (google.protobuf.Value) {}
+  // rpc RunStored(Stored) returns (google.protobuf.Value) {}
 }

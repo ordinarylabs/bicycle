@@ -224,6 +224,7 @@ dependencies = [
  "bicycle_core",
  "deno_core",
  "prost",
+ "prost-types",
  "serde_v8",
  "tokio",
  "tokio-stream",

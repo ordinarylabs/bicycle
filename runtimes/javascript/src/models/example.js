@@ -22,8 +22,8 @@ if (!globalThis.Bicycle) globalThis.Bicycle = {};
 globalThis.Bicycle = {
     ...globalThis.Bicycle,
 
-    getExamplesByPk: (indexQuery) => Deno.core.ops.op_get_examples_by_pk(indexQuery),
-    deleteExamplesByPk: (indexQuery) => Deno.core.ops.op_delete_examples_by_pk(indexQuery),
-    putExample: (example) => Deno.core.ops.op_put_example(example),
-    batchPutExamples: (examples) => Deno.core.ops.op_batch_put_examples(examples),
+    get_examples_by_pk: (indexQuery) => Deno.core.ops.op_get_examples_by_pk(indexQuery),
+    delete_examples_by_pk: (indexQuery) => Deno.core.ops.op_delete_examples_by_pk(indexQuery),
+    put_example: (example) => Deno.core.ops.op_put_example(example),
+    batch_put_example: (examples) => Deno.core.ops.op_batch_put_examples(examples),
 };
