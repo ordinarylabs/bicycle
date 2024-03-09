@@ -40,6 +40,7 @@ prost-types = { workspace = true }
 tokio-stream = { workspace = true }
 tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
 wasi-common = "18.0.2"
+parking_lot = "0.12.1"
 
 [build-dependencies]
 tonic-build = { workspace = true }

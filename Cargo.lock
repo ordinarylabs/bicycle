@@ -275,6 +275,7 @@ name = "bicycle_sproc"
 version = "0.2.0-alpha.0"
 dependencies = [
  "bicycle_core",
+ "parking_lot",
  "prost",
  "prost-types",
  "tokio",

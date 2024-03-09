@@ -222,7 +222,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             proc: proc_bytes,
                             // TODO: accept args
                             args: Some(Value {
-                                kind: Some(prost_types::value::Kind::BoolValue(true)),
+                                kind: Some(prost_types::value::Kind::BoolValue(false)),
                             }),
                         });
 

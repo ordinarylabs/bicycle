@@ -22,10 +22,12 @@ use std::error::Error;
 use std::fs::{create_dir, read_dir, remove_file, File};
 use std::io::{Read, Write};
 use std::path::Path;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 use bicycle_core::models;
 use bicycle_core::proto as bicycle_proto;
+
+use parking_lot::Mutex;
 
 use tonic::{Request, Response, Status};
 
@@ -39,7 +41,9 @@ use prost::Message;
 pub use proto::sproc_server::SprocServer;
 use proto::{sproc_server::Sproc, Empty, Name, OneOff, Proc, Procs, Stored};
 
-use wasmtime::{Caller, Engine, Linker, Module, Store};
+use wasmtime::{
+    AsContext, AsContextMut, Caller, Engine, Extern, Linker, Memory, MemoryType, Module, Store,
+};
 
 const SCRIPT_DIR: &'static str = "__bicycle.sproc__";
 
@@ -52,12 +56,88 @@ fn exec(
     let mut linker = Linker::new(&engine);
     wasi_common::sync::add_to_linker(&mut linker, |s| s)?;
 
-    let stdin = match args {
-        Some(args) => wasi_common::pipe::ReadPipe::from(args.encode_to_vec()),
-        None => wasi_common::pipe::ReadPipe::from(vec![]),
-    };
+    let wasi = wasi_common::sync::WasiCtxBuilder::new()
+        .inherit_stdio()
+        .build();
 
-    let stdout = wasi_common::pipe::WritePipe::new_in_memory();
+    let mut store = Store::new(&engine, wasi);
+
+    let memory_ty = MemoryType::new(1, None);
+    Memory::new(&mut store, memory_ty)?;
+
+    let args = args.clone();
+
+    linker.func_wrap(
+        "env",
+        "get_input",
+        move |mut caller: Caller<'_, wasi_common::WasiCtx>| -> i64 {
+            if let Some(args) = args.clone() {
+                let alloc = match caller.get_export("alloc") {
+                    Some(Extern::Func(malloc)) => {
+                        match malloc.typed::<i32, i32>(caller.as_context()) {
+                            Ok(malloc) => malloc,
+                            Err(_) => return 0,
+                        }
+                    }
+                    _ => return 0,
+                };
+
+                let args_as_bytes = args.encode_to_vec();
+                let len = args_as_bytes.len();
+
+                let ptr = match alloc.call(caller.as_context_mut(), len as i32) {
+                    Ok(ptr) => ptr,
+                    _ => return 0,
+                };
+
+                let mem = match caller.get_export("memory") {
+                    Some(Extern::Memory(mem)) => mem,
+                    _ => return 0,
+                };
+
+                match mem.write(caller.as_context_mut(), ptr as usize, &args_as_bytes) {
+                    Ok(_) => {}
+                    Err(_) => return 0,
+                };
+
+                // combine ptr and len to i64
+                let ptr64 = (ptr as i64) << 32;
+                let len64 = len as i64;
+                ptr64 | len64
+            } else {
+                0
+            }
+        },
+    )?;
+
+    let out = Arc::new(Mutex::new(prost_types::Value { kind: None }));
+    let out_clone = Arc::clone(&out);
+
+    linker.func_wrap(
+        "env",
+        "set_output",
+        move |mut caller: Caller<'_, wasi_common::WasiCtx>, ptr: i32, len: i32| {
+            let mem = match caller.get_export("memory") {
+                Some(Extern::Memory(mem)) => mem,
+                _ => return (),
+            };
+
+            let mut buf = vec![0u8; len as usize];
+
+            match mem.read(caller.as_context_mut(), ptr as usize, &mut buf) {
+                Ok(_) => {}
+                Err(_) => return (),
+            };
+
+            match prost_types::Value::decode(&buf[..]) {
+                Ok(val) => {
+                    let mut out = out_clone.lock();
+                    *out = val;
+                }
+                Err(_) => (),
+            };
+        },
+    )?;
 
     // ##START_HOST_FNS##
     linker.func_wrap(
@@ -114,12 +194,6 @@ fn exec(
     )?;
     // ##END_HOST_FNS##
 
-    let wasi = wasi_common::sync::WasiCtxBuilder::new()
-        .stdin(Box::new(stdin.clone()))
-        .stdout(Box::new(stdout.clone()))
-        .build();
-    let mut store = Store::new(&engine, wasi);
-
     let module = Module::new(&engine, src)?;
     linker.module(&mut store, "", &module)?;
 
@@ -128,16 +202,10 @@ fn exec(
         .typed::<(), ()>(&store)?
         .call(&mut store, ())?;
 
-    drop(store);
+    // drop(store);
 
-    match stdout.try_into_inner() {
-        Ok(mut out) => {
-            out.set_position(0);
-            let decoded = prost_types::Value::decode(out)?;
-            Ok(decoded)
-        }
-        Err(_) => Err("references to write pipe remain".into()),
-    }
+    let out = out.lock();
+    Ok(out.clone())
 }
 
 pub struct SprocService {
