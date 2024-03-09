@@ -20,13 +20,14 @@ version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "gRPC database server for the Bicycle project"
+description = "gRPC database server for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 
 [dependencies]
 bicycle_core = { workspace = true }
+bicycle_sproc = { workspace = true }
 
 prost = { workspace = true }
 
@@ -42,5 +43,3 @@ jemallocator = "0.5.0"
 parking_lot = "0.12.1"
 
 serde = { version = "1.0", features = ["derive"] }
-
-##RUNTIME_DEPS##

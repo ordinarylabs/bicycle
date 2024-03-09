@@ -17,13 +17,42 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-if (!globalThis.Bicycle) globalThis.Bicycle = {};
+syntax = "proto3";
+package bicycle.sproc;
 
-globalThis.Bicycle = {
-    ...globalThis.Bicycle,
+import "google/protobuf/struct.proto";
 
-    get_examples_by_pk: (indexQuery) => Deno.core.ops.op_get_examples_by_pk(indexQuery),
-    delete_examples_by_pk: (indexQuery) => Deno.core.ops.op_delete_examples_by_pk(indexQuery),
-    put_example: (example) => Deno.core.ops.op_put_example(example),
-    batch_put_example: (examples) => Deno.core.ops.op_batch_put_examples(examples),
-};
+message Empty {}
+
+message Name {
+  string name = 1;
+}
+
+message Proc {
+  string name = 1;
+  bytes proc = 2;
+}
+
+message Procs {
+  repeated Proc procs = 1;
+}
+
+message OneOff {
+  bytes proc = 1;
+  google.protobuf.Value args = 2;
+}
+
+message Stored {
+  string name = 1;
+  google.protobuf.Value args = 2;
+}
+
+service Sproc {
+  rpc Remove(Name) returns (Empty) {}
+  rpc Deploy(Proc) returns (Empty) {}
+
+  rpc List(Empty) returns (Procs) {}
+
+  rpc ExecOneOff(OneOff) returns (google.protobuf.Value) {}
+  rpc ExecStored(Stored) returns (google.protobuf.Value) {}
+}

@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use std::error::Error;
 use tonic::transport::Server;
 
-use bicycle_runtime_javascript::{RuntimeServer, RuntimeService, FILE_DESCRIPTOR_SET};
+use bicycle_sproc::{SprocServer, SprocService, FILE_DESCRIPTOR_SET};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -31,10 +31,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .build()
         .unwrap();
 
-    println!("Runtime Server 🚀 listening at: {}", addr);
+    println!("SPROC Server 🚀 listening at: {}", addr);
 
     Server::builder()
-        .add_service(RuntimeServer::new(RuntimeService::new()?))
+        .add_service(SprocServer::new(SprocService::new()?))
         .add_service(reflection_service)
         .serve(addr)
         .await?;

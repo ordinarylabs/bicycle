@@ -16,19 +16,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "bicycle_runtime_javascript"
+name = "bicycle_sproc"
 version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "JavaScript SPROC runtime for the Bicycle project"
+description = "WebAssembly SPROC runtime for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
 categories = []
 
 [dependencies]
-deno_core = "0.267.0"
-serde_v8 = "0.176.0"
+wasmtime = "18.0.2"
 
 bicycle_core = { workspace = true }
 
@@ -40,6 +39,7 @@ prost-types = { workspace = true }
 
 tokio-stream = { workspace = true }
 tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
+wasi-common = "18.0.2"
 
 [build-dependencies]
 tonic-build = { workspace = true }

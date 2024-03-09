@@ -16,12 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "bicycle_engine_rocksdb"
+name = "bicycle_rocksdb"
 version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "RocksDB database engine for the Bicycle project"
+description = "RocksDB database engine for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
 categories = ["database"]

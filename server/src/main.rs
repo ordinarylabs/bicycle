@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let reflection_service = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(FILE_DESCRIPTOR_SET)
-        // ##RUNTIME_DESCRIPTORS##
+        .register_encoded_file_descriptor_set(bicycle_sproc::FILE_DESCRIPTOR_SET)
         .build()
         .unwrap();
 
@@ -103,7 +103,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     Server::builder()
         .add_service(BicycleServer::new(BicycleService {}))
-        // ##RUNTIME_SERVICES##
+        .add_service(bicycle_sproc::SprocServer::new(
+            bicycle_sproc::SprocService::new()?,
+        ))
         .add_service(reflection_service)
         .serve(addr)
         .await?;

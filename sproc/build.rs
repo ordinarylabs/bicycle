@@ -23,7 +23,7 @@ fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     tonic_build::configure()
-        .file_descriptor_set_path(out_dir.join("runtime_descriptor.bin"))
-        .compile(&["./runtime.proto"], &["."])
+        .file_descriptor_set_path(out_dir.join("sproc_descriptor.bin"))
+        .compile(&["./sproc.proto"], &["."])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 }

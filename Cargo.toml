@@ -21,7 +21,7 @@ version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "Builder tool for the Bicycle project"
+description = "Builder tool for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
 categories = ["command-line-utilities", "database"]
@@ -48,14 +48,20 @@ lazy_static = { workspace = true }
 
 prost = { workspace = true }
 prost-types = { workspace = true }
+
+tokio = { workspace = true }
+
+tonic = { workspace = true }
 tonic-build = { workspace = true }
+
+bicycle_sproc = { workspace = true }
 
 [workspace]
 members = [
     "core", 
-    "server", 
     "engines/rocksdb",
-    "runtimes/javascript",
+    "server", 
+    "sproc",
 ]
 
 [workspace.package]
@@ -84,6 +90,6 @@ tokio = "1.36.0"
 
 bicycle_core = { path = "./core", version = "0.2.0-alpha.0" }
 bicycle_server = { path = "./server", version = "0.2.0-alpha.0" }
+bicycle_sproc = { path = "./sproc", version = "0.2.0-alpha.0" }
 
-engine = { package = "bicycle_engine_rocksdb", path = "./engines/rocksdb", version = "0.2.0-alpha.0" }
-javascript_runtime = { package = "bicycle_runtime_javascript", path = "./runtimes/javascript", version = "0.2.0-alpha.0" }
+engine = { package = "bicycle_rocksdb", path = "./engines/rocksdb", version = "0.2.0-alpha.0" }

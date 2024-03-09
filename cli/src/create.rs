@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use std::env;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{exit, Command};
+use std::process::exit;
 use std::time::Instant;
 use std::{fs, fs::File};
 
@@ -35,12 +35,11 @@ use crate::{gen, utils::Model, PRECOMPILE_DIR};
 ///
 /// * `schema_path` - path to the schema.proto file
 /// * `engine` - the database engine used
-/// * `runtimes` - list of SPROC runtimes to include in build
-pub fn create(schema_path: &str, engine: &str, runtimes: Vec<String>) {
+pub fn create(schema_path: &str, engine: &str) -> Result<(), Box<dyn std::error::Error>> {
     if Path::new(PRECOMPILE_DIR).exists() {
-        fs::remove_dir_all(PRECOMPILE_DIR).unwrap();
+        fs::remove_dir_all(PRECOMPILE_DIR)?;
     }
-    fs::create_dir(PRECOMPILE_DIR).unwrap();
+    fs::create_dir(PRECOMPILE_DIR)?;
 
     std::env::set_var("OUT_DIR", PRECOMPILE_DIR);
     let precompile_dir = PathBuf::from(PRECOMPILE_DIR);
@@ -52,8 +51,8 @@ pub fn create(schema_path: &str, engine: &str, runtimes: Vec<String>) {
         .compile(&[&schema_path], &["proto"])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 
-    let descriptor_bytes = fs::read(&tmp_desc_path).unwrap();
-    let file_descriptor_set = FileDescriptorSet::decode(&descriptor_bytes[..]).unwrap();
+    let descriptor_bytes = fs::read(&tmp_desc_path)?;
+    let file_descriptor_set = FileDescriptorSet::decode(&descriptor_bytes[..])?;
 
     let mut models: Vec<Model> = vec![];
 
@@ -66,22 +65,19 @@ pub fn create(schema_path: &str, engine: &str, runtimes: Vec<String>) {
         }
     }
 
-    fs::remove_file(tmp_desc_path).unwrap();
-    fs::remove_file(precompile_dir.join("bicycle.rs")).unwrap();
+    fs::remove_file(tmp_desc_path)?;
+    fs::remove_file(precompile_dir.join("bicycle.rs"))?;
 
     let now = Instant::now();
     println!("📁 generating files...");
 
-    gen::gen(models, engine, runtimes);
+    gen::gen(models, engine)?;
 
-    if let Err(err) = env::set_current_dir(PRECOMPILE_DIR) {
-        eprintln!("Failed to change directory: {}", err);
-        exit(1);
-    }
+    env::set_current_dir(PRECOMPILE_DIR)?;
 
     if !Path::new("cli").exists() {
-        fs::create_dir("cli").unwrap();
-        fs::create_dir("cli/src").unwrap();
+        fs::create_dir("cli")?;
+        fs::create_dir("cli/src")?;
 
         let code = r#"
 fn main() {
@@ -93,14 +89,14 @@ fn main() {
         let src_main_path = Path::new("cli").join("src/main.rs");
         let build_path = Path::new("cli").join("build.rs");
 
-        let mut src_lib_file = File::create(src_lib_path).unwrap();
-        src_lib_file.write_all(code.as_bytes()).unwrap();
+        let mut src_lib_file = File::create(src_lib_path)?;
+        src_lib_file.write_all(code.as_bytes())?;
 
-        let mut src_main_file = File::create(src_main_path).unwrap();
-        src_main_file.write_all(code.as_bytes()).unwrap();
+        let mut src_main_file = File::create(src_main_path)?;
+        src_main_file.write_all(code.as_bytes())?;
 
-        let mut build_file = File::create(build_path).unwrap();
-        build_file.write_all(code.as_bytes()).unwrap();
+        let mut build_file = File::create(build_path)?;
+        build_file.write_all(code.as_bytes())?;
     }
 
     println!(
@@ -111,24 +107,37 @@ fn main() {
     let now = Instant::now();
     println!("🛠️  building server...");
 
-    Command::new("cargo")
+    let out = std::process::Command::new("cargo")
         .args(["build", "--release", "-p", "bicycle_server"])
-        .output()
-        .unwrap();
+        .stderr(std::process::Stdio::piped())
+        .output()?;
+
+    if !out.status.success() {
+        println!("failed to build server: {}", String::from_utf8(out.stderr)?);
+        exit(1)
+    }
 
     println!("🛠️  done building server. [{}ms]", now.elapsed().as_millis());
 
     if !Path::new("../out").exists() {
-        fs::create_dir("../out").unwrap();
+        fs::create_dir("../out")?;
     }
 
     let now = Instant::now();
     println!("📦 moving proto file...");
 
-    Command::new("mv")
+    let out = std::process::Command::new("mv")
         .args(["./core/bicycle.proto", "../out"])
-        .output()
-        .unwrap();
+        .stderr(std::process::Stdio::piped())
+        .output()?;
+
+    if !out.status.success() {
+        println!(
+            "failed to move proto file: {}",
+            String::from_utf8(out.stderr)?
+        );
+        exit(1)
+    }
 
     println!(
         "📦 done moving proto file. [{}ms]",
@@ -138,10 +147,18 @@ fn main() {
     let now = Instant::now();
     println!("📦 moving server binary...");
 
-    Command::new("mv")
+    let out = std::process::Command::new("mv")
         .args(["./target/release/bicycle_server", "../out/server"])
-        .output()
-        .unwrap();
+        .stderr(std::process::Stdio::piped())
+        .output()?;
+
+    if !out.status.success() {
+        println!(
+            "failed to move server binary: {}",
+            String::from_utf8(out.stderr)?
+        );
+        exit(1)
+    }
 
     println!(
         "📦 done moving server binary. [{}ms]",
@@ -151,7 +168,7 @@ fn main() {
     let now = Instant::now();
     println!("📁 clearing {}...", PRECOMPILE_DIR);
 
-    // fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR)).unwrap();
+    // fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR))?;
 
     println!(
         "📁 cleared {}. [{}ms]",
@@ -161,5 +178,7 @@ fn main() {
 
     println!("✅ done!");
 
-    println!("\n🚀 start server: ./out/server\n🚲 client codegen: ./out/bicycle.proto")
+    println!("\n🚀 start server: ./out/server\n🚲 client codegen: ./out/bicycle.proto");
+
+    Ok(())
 }

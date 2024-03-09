@@ -134,55 +134,38 @@ fn main() -> std::io::Result<()> {
         tmp_path.join("server/src/main.rs"),
     )?;
 
-    // RUNTIMES
+    // SPROC
 
-    let tmp_runtimes_path = tmp_path.join("runtimes");
+    let tmp_sproc_path = tmp_path.join("sproc");
 
-    if !tmp_runtimes_path.exists() {
-        create_dir(tmp_runtimes_path)?;
-    }
-
-    let tmp_runtimes_javascript_path = tmp_path.join("runtimes/javascript");
-
-    if !tmp_runtimes_javascript_path.exists() {
-        create_dir(tmp_runtimes_javascript_path)?;
+    if !tmp_sproc_path.exists() {
+        create_dir(tmp_sproc_path)?;
     }
 
     copy(
-        manifest_path.join("runtimes/javascript/build.rs"),
-        tmp_path.join("runtimes/javascript/build.rs"),
+        manifest_path.join("sproc/build.rs"),
+        tmp_path.join("sproc/build.rs"),
     )?;
 
     copy(
-        manifest_path.join("runtimes/javascript/Cargo.toml"),
-        tmp_path.join("runtimes/javascript/Freight.toml"),
+        manifest_path.join("sproc/Cargo.toml"),
+        tmp_path.join("sproc/Freight.toml"),
     )?;
 
     copy(
-        manifest_path.join("runtimes/javascript/runtime.proto"),
-        tmp_path.join("runtimes/javascript/runtime.proto"),
+        manifest_path.join("sproc/sproc.proto"),
+        tmp_path.join("sproc/sproc.proto"),
     )?;
 
-    let tmp_runtimes_javascript_src_path = tmp_path.join("runtimes/javascript/src");
+    let tmp_sproc_wasm_src_path = tmp_path.join("sproc/src");
 
-    if !tmp_runtimes_javascript_src_path.exists() {
-        create_dir(tmp_runtimes_javascript_src_path)?;
+    if !tmp_sproc_wasm_src_path.exists() {
+        create_dir(tmp_sproc_wasm_src_path)?;
     }
 
     copy(
-        manifest_path.join("runtimes/javascript/src/lib.rs"),
-        tmp_path.join("runtimes/javascript/src/lib.rs"),
-    )?;
-
-    let tmp_runtimes_javascript_src_models_path = tmp_path.join("runtimes/javascript/src/models");
-
-    if !tmp_runtimes_javascript_src_models_path.exists() {
-        create_dir(tmp_runtimes_javascript_src_models_path)?;
-    }
-
-    copy(
-        manifest_path.join("runtimes/javascript/src/models/example.js"),
-        tmp_path.join("runtimes/javascript/src/models/example.js"),
+        manifest_path.join("sproc/src/lib.rs"),
+        tmp_path.join("sproc/src/lib.rs"),
     )?;
 
     Ok(())

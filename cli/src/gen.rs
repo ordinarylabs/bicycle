@@ -76,27 +76,23 @@ const SERVER_SRC_MAIN_RS: &'static str = include_str!(concat!(
     "/cli/tmp/server/src/main.rs"
 ));
 
-// RUNTIMES
+// SPROC
 
-const RUNTIMES_JAVASCRIPT_CARGO_TOML: &'static str = include_str!(concat!(
+const SPROC_CARGO_TOML: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/runtimes/javascript/Freight.toml"
+    "/cli/tmp/sproc/Freight.toml"
 ));
-const RUNTIMES_JAVASCRIPT_BUILD_RS: &'static str = include_str!(concat!(
+const SPROC_BUILD_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/runtimes/javascript/build.rs"
+    "/cli/tmp/sproc/build.rs"
 ));
-const RUNTIMES_JAVASCRIPT_RUNTIME_PROTO: &'static str = include_str!(concat!(
+const SPROC_RUNTIME_PROTO: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/runtimes/javascript/runtime.proto"
+    "/cli/tmp/sproc/sproc.proto"
 ));
-const RUNTIMES_JAVASCRIPT_SRC_LIB_RS: &'static str = include_str!(concat!(
+const SPROC_SRC_LIB_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/runtimes/javascript/src/lib.rs"
-));
-const RUNTIMES_JAVASCRIPT_SRC_MODELS_EXAMPLE_JS: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/runtimes/javascript/src/models/example.js"
+    "/cli/tmp/sproc/src/lib.rs"
 ));
 
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
@@ -134,73 +130,65 @@ lazy_static! {
         "##START_HANDLERS##",
         Some("##END_HANDLERS##")
     );
-    static ref RUNTIMES_JAVASCRIPT_OPS: String = get_between(
-        RUNTIMES_JAVASCRIPT_SRC_LIB_RS,
-        "##START_OPS##",
-        Some("##END_OPS##")
-    );
-    static ref RUNTIMES_JAVASCRIPT_EXTENSIONS: String = get_between(
-        RUNTIMES_JAVASCRIPT_SRC_LIB_RS,
-        "##START_EXTENSIONS##",
-        Some("##END_EXTENSIONS##")
+    static ref SPROC_HOST_FNS: String = get_between(
+        SPROC_SRC_LIB_RS,
+        "##START_HOST_FNS##",
+        Some("##END_HOST_FNS##")
     );
 }
 
-fn create_dir(path: &str) {
+fn create_dir(path: &str) -> Result<(), Box<dyn std::error::Error>> {
     let path = format!("{}/{}", PRECOMPILE_DIR, path);
 
     if Path::new(&path).exists() {
-        fs::remove_dir_all(path.clone()).unwrap();
+        fs::remove_dir_all(path.clone())?;
     }
-    fs::create_dir(&path).unwrap();
+    fs::create_dir(&path)?;
+
+    Ok(())
 }
 
-fn write_file(path: &str, content: &str) {
-    let mut file = fs::File::create(format!("{}/{}", PRECOMPILE_DIR, path)).unwrap();
-    file.write_all(content.as_bytes()).unwrap();
+fn write_file(path: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = fs::File::create(format!("{}/{}", PRECOMPILE_DIR, path))?;
+    file.write_all(content.as_bytes())?;
+
+    Ok(())
 }
 
-pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
+pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::error::Error>> {
     // BASE
-    write_file("Cargo.toml", WORKSPACE_CARGO_TOML);
+    write_file("Cargo.toml", WORKSPACE_CARGO_TOML)?;
 
     // CORE
-    create_dir("core");
-    write_file("core/build.rs", CORE_BUILD_RS);
-    write_file("core/Cargo.toml", CORE_CARGO_TOML);
+    create_dir("core")?;
+    write_file("core/build.rs", CORE_BUILD_RS)?;
+    write_file("core/Cargo.toml", CORE_CARGO_TOML)?;
 
-    create_dir("core/src");
-    write_file("core/src/lib.rs", CORE_SRC_LIB_RS);
+    create_dir("core/src")?;
+    write_file("core/src/lib.rs", CORE_SRC_LIB_RS)?;
 
-    create_dir("core/src/models");
+    create_dir("core/src/models")?;
 
     // ENGINES
-    create_dir("engines");
-    create_dir("engines/rocksdb");
-    write_file("engines/rocksdb/Cargo.toml", ENGINES_ROCKSDB_CARGO_TOML);
+    create_dir("engines")?;
+    create_dir("engines/rocksdb")?;
+    write_file("engines/rocksdb/Cargo.toml", ENGINES_ROCKSDB_CARGO_TOML)?;
 
-    create_dir("engines/rocksdb/src");
-    write_file("engines/rocksdb/src/lib.rs", ENGINES_ROCKSDB_SRC_LIB_RS);
+    create_dir("engines/rocksdb/src")?;
+    write_file("engines/rocksdb/src/lib.rs", ENGINES_ROCKSDB_SRC_LIB_RS)?;
 
     // SERVER
-    create_dir("server");
-    create_dir("server/src");
+    create_dir("server")?;
+    create_dir("server/src")?;
 
-    // RUNTIMES
-    create_dir("runtimes");
-    create_dir("runtimes/javascript");
-    write_file(
-        "runtimes/javascript/Cargo.toml",
-        RUNTIMES_JAVASCRIPT_CARGO_TOML,
-    );
-    write_file("runtimes/javascript/build.rs", RUNTIMES_JAVASCRIPT_BUILD_RS);
-    write_file(
-        "runtimes/javascript/runtime.proto",
-        RUNTIMES_JAVASCRIPT_RUNTIME_PROTO,
-    );
+    // SPROC
+    create_dir("sproc")?;
+    write_file("sproc/Cargo.toml", SPROC_CARGO_TOML)?;
+    write_file("sproc/build.rs", SPROC_BUILD_RS)?;
+    write_file("sproc/sproc.proto", SPROC_RUNTIME_PROTO)?;
 
-    create_dir("runtimes/javascript/src");
-    create_dir("runtimes/javascript/src/models");
+    create_dir("sproc/src")?;
+    create_dir("sproc/src/models")?;
 
     let mut rpc_block = "".to_string();
     let mut messages_block = "".to_string();
@@ -209,8 +197,7 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
 
     let mut server_handlers_block = "".to_string();
 
-    let mut runtimes_javascript_ops_block = "".to_string();
-    let mut runtimes_javascript_extensions_block = "".to_string();
+    let mut sprocs_host_fns_block = "".to_string();
 
     for (i, model) in models.iter().enumerate() {
         let (rpc_chunk, messages_chunk) = gen_proto(&model);
@@ -240,7 +227,7 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
         write_file(
             &format!("core/src/models/{}.rs", model.name.to_snake_case()),
             &model_file_content,
-        );
+        )?;
 
         server_handlers_block = format!(
             "{}{}{}",
@@ -249,31 +236,11 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
             replace_model_name(&model, &SERVER_HANDLERS)
         );
 
-        let runtimes_javascript_model_example_content = replace_model_name(
-            &model,
-            &RUNTIMES_JAVASCRIPT_SRC_MODELS_EXAMPLE_JS.to_string(),
-        );
-
-        write_file(
-            &format!(
-                "runtimes/javascript/src/models/{}.js",
-                model.name.to_snake_case()
-            ),
-            &runtimes_javascript_model_example_content,
-        );
-
-        runtimes_javascript_ops_block = format!(
+        sprocs_host_fns_block = format!(
             "{}{}{}",
-            runtimes_javascript_ops_block,
+            sprocs_host_fns_block,
             if i == 0 { "" } else { "\n" },
-            replace_model_name(&model, &RUNTIMES_JAVASCRIPT_OPS)
-        );
-
-        runtimes_javascript_extensions_block = format!(
-            "{}{}{}",
-            runtimes_javascript_extensions_block,
-            if i == 0 { "" } else { "\n" },
-            replace_model_name(&model, &RUNTIMES_JAVASCRIPT_EXTENSIONS)
+            replace_model_name(&model, &SPROC_HOST_FNS)
         );
     }
 
@@ -282,57 +249,22 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str, runtimes: Vec<String>) {
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
 
-    write_file("core/src/models/mod.rs", &core_models_mod_rs);
-    write_file("core/bicycle.proto", &proto);
+    write_file("core/src/models/mod.rs", &core_models_mod_rs)?;
+    write_file("core/bicycle.proto", &proto)?;
 
-    // RUNTIMES
-    let runtimes_javascript_src_lib_rs = RUNTIMES_JAVASCRIPT_SRC_LIB_RS
-        .replace(
-            &RUNTIMES_JAVASCRIPT_OPS.to_string(),
-            &runtimes_javascript_ops_block,
-        )
-        .replace(
-            &RUNTIMES_JAVASCRIPT_EXTENSIONS.to_string(),
-            &runtimes_javascript_extensions_block,
-        );
+    // SPROC
+    let sprocs_src_lib_rs =
+        SPROC_SRC_LIB_RS.replace(&SPROC_HOST_FNS.to_string(), &sprocs_host_fns_block);
 
-    write_file(
-        "runtimes/javascript/src/lib.rs",
-        &runtimes_javascript_src_lib_rs,
-    );
+    write_file("sproc/src/lib.rs", &sprocs_src_lib_rs)?;
 
-    let mut runtime_descriptors = "".to_string();
-    let mut runtime_services = "".to_string();
-    let mut runtime_deps = "".to_string();
+    write_file("server/Cargo.toml", &SERVER_CARGO_TOML)?;
 
-    for runtime in runtimes {
-        runtime_descriptors = format!(
-            r#"{}.register_encoded_file_descriptor_set({}_runtime::FILE_DESCRIPTOR_SET)
-        "#,
-            runtime_descriptors, runtime
-        );
-        runtime_services = format!(
-            r#"{}.add_service({}_runtime::RuntimeServer::new({}_runtime::RuntimeService::new()?))
-        "#,
-            runtime_services, runtime, runtime,
-        );
+    let server_src_main_rs =
+        SERVER_SRC_MAIN_RS.replace(&SERVER_HANDLERS.to_string(), &server_handlers_block);
+    write_file("server/src/main.rs", &server_src_main_rs)?;
 
-        runtime_deps = format!(
-            r#"
-{}_runtime = {{ workspace = true }}
-"#,
-            runtime
-        );
-    }
-
-    let server_cargo_toml = SERVER_CARGO_TOML.replace("##RUNTIME_DEPS##", &runtime_deps);
-    write_file("server/Cargo.toml", &server_cargo_toml);
-
-    let server_src_main_rs = SERVER_SRC_MAIN_RS
-        .replace(&SERVER_HANDLERS.to_string(), &server_handlers_block)
-        .replace("// ##RUNTIME_DESCRIPTORS##", &runtime_descriptors)
-        .replace("// ##RUNTIME_SERVICES##", &runtime_services);
-    write_file("server/src/main.rs", &server_src_main_rs);
+    Ok(())
 }
 
 fn gen_proto(model: &Model) -> (String, String) {
