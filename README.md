@@ -255,7 +255,7 @@ For a basic SPROC example we have the following which uses the `recv_in` to get 
 
 Once we have the "begins_with" argument from `recv_in` we use the `get_dogs_by_pk` shim to grab the requested `Dog`s from the host, map over just their names, and then send the output back to the host via `send_out`. Once the host captures the result of `send_out` they will forward it onto the caller.
 
-NOTE: All SPROC I/O uses the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf message and `bicycle_shims` re-exports `prost-types` crate which provides the Rust implementation of the `Value` type for you.
+*Note*: all SPROC I/O uses the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf message and `bicycle_shims` re-exports `prost-types` crate which provides the Rust implementation of the `Value` type for you.
 
 ```rust
 // dog-names-proc/src/main.rs
