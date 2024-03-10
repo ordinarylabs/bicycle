@@ -31,8 +31,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand_required(true)
         .arg_required_else_help(true)
         .subcommand(
-            command!("create")
-                .about("creates a new server binary and client proto definition.")
+            command!("build")
+                .about("builds server, client, shims and proto definitions.")
                 .arg(
                     arg!(<SCHEMA_PATH> "path to the schema.proto file")
                         .value_parser(value_parser!(String)),
@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .subcommand(
             command!("sproc")
-                .about("commands for interacting with the stored procedure API.")
+                .about("commands for interacting with the stored procedure API.\n'--lang rust' depends on `cargo-wasi`")
                 .subcommand_required(true)
                 .subcommand(
                     command!("deploy")
@@ -67,7 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         )
                         .arg_required_else_help(true)
                         .arg(
-                            arg!(--"lang" <LANGUAGE> "language to be compiled to WebAssembly")
+                            arg!(--"lang" <LANGUAGE> "language to be compiled to WebAssembly.")
                                 .value_parser(["rust"]),
                         )
                         .arg_required_else_help(true)
@@ -122,14 +122,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = cmd.get_matches();
 
     match matches.subcommand() {
-        Some(("create", matches)) => {
+        Some(("build", matches)) => {
             let schema_path = matches.get_one::<String>("SCHEMA_PATH").expect("required");
 
             let engine = matches
                 .get_one::<String>("engine")
                 .expect("default value provided");
 
-            bicycle::create(schema_path, engine)?;
+            bicycle::build(schema_path, engine)?;
         }
         Some(("sproc", matches)) => match matches.subcommand() {
             Some(("deploy", matches)) => {

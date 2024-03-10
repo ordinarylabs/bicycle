@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pub(crate) const PRECOMPILE_DIR: &'static str = "./__bicycle__";
 
-mod create;
-pub use create::create;
+mod build;
+pub use build::build;
 
 pub(crate) mod gen;
 pub(crate) mod utils;

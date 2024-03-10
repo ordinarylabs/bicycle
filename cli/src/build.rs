@@ -35,7 +35,7 @@ use crate::{gen, utils::Model, PRECOMPILE_DIR};
 ///
 /// * `schema_path` - path to the schema.proto file
 /// * `engine` - the database engine used
-pub fn create(schema_path: &str, engine: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn build(schema_path: &str, engine: &str) -> Result<(), Box<dyn std::error::Error>> {
     if !Path::new(PRECOMPILE_DIR).exists() {
         fs::create_dir(PRECOMPILE_DIR)?;
     }
