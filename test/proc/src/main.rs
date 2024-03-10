@@ -17,13 +17,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use host::{get_input, set_output, Value};
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let val = host::get_input()?;
+    let val: Option<Value> = get_input()?;
 
     if let Some(val) = val {
-        host::set_output(Some(val))?;
+        set_output(Some(val))?;
     }
 
     Ok(())
