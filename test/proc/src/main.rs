@@ -17,15 +17,39 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use host::{get_input, set_output, Value};
+use host::prost_types::{value::Kind, ListValue, Value};
+use host::{get_input, set_output};
+
+use host::models::example::get_examples_by_pk;
+use host::proto::{index_query::Expression, Examples, IndexQuery};
+
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let val: Option<Value> = get_input()?;
 
-    if let Some(val) = val {
-        set_output(Some(val))?;
-    }
+    let val = match val {
+        Some(val) => match val.kind {
+            Some(Kind::StringValue(str_val)) => str_val,
+            _ => "".to_string(),
+        },
+        None => "".to_string(),
+    };
+
+    let Examples { examples } = get_examples_by_pk(IndexQuery {
+        expression: Some(Expression::BeginsWith(val)),
+    })?;
+
+    let pks = examples
+        .into_iter()
+        .map(|example| Value {
+            kind: Some(Kind::StringValue(example.pk)),
+        })
+        .collect::<Vec<Value>>();
+
+    set_output(Some(Value {
+        kind: Some(Kind::ListValue(ListValue { values: pks })),
+    }))?;
 
     Ok(())
 }

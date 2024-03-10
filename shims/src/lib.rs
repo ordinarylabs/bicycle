@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub use prost_types::Value;
+pub use prost_types;
 pub mod models;
 
 pub mod proto {
@@ -27,6 +27,7 @@ pub mod proto {
 use std::error::Error;
 
 use prost::Message;
+use prost_types::Value;
 
 extern "C" {
     fn host_get_input() -> i64;

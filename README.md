@@ -129,16 +129,16 @@ Stored procedures are supported and can be written in Rust with built with the `
 
 `bicycle sproc ...` commands depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi`.
 
-To create a new SPROC run the following
+For this example we want to create a stored procedure that will return us only the `Dog`'s names; to create a new SPROC we run the following
 
 ```bash
-cargo new my-proc
+cargo new dog-names-proc
 ```
 
 Some additional items need to be added to the `Cargo.toml`. The host shims are provided in the build output and will need to be added as a dependency, as well as setting your build target's name to a fixed `"proc"` and adjusting the release profile to produce smaller build sizes.
 
 ```toml
-# my-proc/Cargo.toml
+# dog-names-proc/Cargo.toml
 
 ## shims to interact more ergonomically with the host functions
 host = { package = "bicycle_shims", path = "__bicycle__/shims" }
@@ -154,18 +154,42 @@ lto = true
 opt-level = 'z'
 ```
 
-For a basic SPROC example we have the following which just uses the `get_input` to get the pull in the dynamic input passed in at call time, and pass back that same value as output. All SPROC I/O uses the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf message type.
+For a basic SPROC example we have the following which just uses the `get_input` to get the pull in the dynamic input passed in at call time, and pass back that same value as output. All SPROC I/O uses the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf message (`bicycle_shims` re-exports `prost-types` which provides the Rust implementation of the `Value` type).
 
 ```rust
-use host::{get_input, set_output, Value};
+use host::prost_types::{value::Kind, ListValue, Value};
+use host::{get_input, set_output};
+
+use host::models::dog::get_dogs_by_pk;
+use host::proto::{index_query::Expression, Dogs, IndexQuery};
+
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let val: Option<Value> = get_input()?;
 
-    if let Some(val) = val {
-        set_output(Some(val))?;
-    }
+    let val = match val {
+        Some(val) => match val.kind {
+            Some(Kind::StringValue(str_val)) => str_val,
+            _ => "".to_string(),
+        },
+        None => "".to_string(),
+    };
+
+    let Dogs { dogs } = get_dogs_by_pk(IndexQuery {
+        expression: Some(Expression::BeginsWith(val)),
+    })?;
+
+    let names = dogs
+        .into_iter()
+        .map(|dog| Value {
+            kind: Some(Kind::StringValue(dog.name)),
+        })
+        .collect::<Vec<Value>>();
+
+    set_output(Some(Value {
+        kind: Some(Kind::ListValue(ListValue { values: names })),
+    }))?;
 
     Ok(())
 }
@@ -174,17 +198,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 To test the procedure as a one-off against your Bicycle server
 
 ```bash
-bicycle sproc oneoff ./my-proc --lang rust --addr http://0.0.0.0:50051
+bicycle sproc oneoff ./dog-names-proc --lang rust --addr http://0.0.0.0:50051 --args ""
 ```
 
 To store the procedure on your Bicycle server for future execution
 
 ```bash
-bicycle sproc deploy ./my-proc --name my-proc --lang rust --addr http://0.0.0.0:50051
+bicycle sproc deploy ./dog-names-proc --name dog-names-proc --lang rust --addr http://0.0.0.0:50051 --args ""
 ```
 
 To execute a previously stored procedure on your Bicycle server
 
 ```bash
-bicycle sproc deploy --name my-proc --addr http://0.0.0.0:50051
+bicycle sproc deploy --name dog-names-proc --addr http://0.0.0.0:50051 --args ""
 ```

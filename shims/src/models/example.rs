@@ -17,9 +17,29 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use std::error::Error;
+
+use crate::proto::{Example, Examples, IndexQuery};
+
 extern "C" {
     fn host_get_examples_by_pk(ptr: i32, len: i32) -> i64;
     fn host_delete_examples_by_pk(ptr: i32, len: i32) -> i32;
     fn host_put_example(ptr: i32, len: i32) -> i32;
     fn host_batch_put_examples(ptr: i32, len: i32) -> i32;
+}
+
+pub fn get_examples_by_pk(index_query: IndexQuery) -> Result<Examples, Box<dyn Error>> {
+    Ok(Examples { examples: vec![] })
+}
+
+pub fn delete_examples_by_pk(index_query: IndexQuery) -> Result<(), Box<dyn Error>> {
+    Ok(())
+}
+
+pub fn put_example(example: Example) -> Result<(), Box<dyn Error>> {
+    Ok(())
+}
+
+pub fn batch_put_examples(examples: Examples) -> Result<(), Box<dyn Error>> {
+    Ok(())
 }
