@@ -42,11 +42,15 @@ bicycle build schema.proto
 
 ## Server
 
+### Running
+
 You can now run the server binary with the following command.
 
 ```bash
 ./__bicycle__/target/release/bicycle_server
 ```
+
+### Testing RPCs
 
 To test some basic CRUD you can use [gRPCurl](https://github.com/fullstorydev/grpcurl)
 
@@ -172,11 +176,13 @@ service Bicycle {
 
 ### Desktop GUIs
 
-Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can also roll over to your preferred gRPC desktop client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
+Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0::50051`, and it can automatically load up all your RPCs.
 
 ## Embedding
 
-In addition to the gRPC server based implementation, you can also use the generated `core` functions without using gRPC at all. The query/storage format remain protobuf, but without the remote server interaction.
+### Rust
+
+In addition to the gRPC server based implementation, you can also use the generated Rust `core` functions without using gRPC at all. The query/storage format remain protobuf, but without the remote server interaction.
 
 You can import the core functionality into your project by adding the generated `bicycle_core` as a dependency in your `Cargo.toml`
 
@@ -216,6 +222,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 Stored procedures are supported and can be written in Rust built for the `wasm32-wasi` target. Currently only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
 
 `bicycle sproc ...` commands depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
+
+### Definition
 
 For this example we want to create a stored procedure that will return us only the `Dog`'s names. To create a new SPROC we run the following
 
@@ -287,6 +295,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 ```
+
+### Execution
 
 To test the procedure as a one-off against your Bicycle server
 
