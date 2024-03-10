@@ -41,7 +41,7 @@ Run the `create` command to generate your Bicycle server binary and protobuf def
 bicycle create schema.proto
 ```
 
-## Running
+## Server
 
 You can now run the server binary with the following command.
 
@@ -85,11 +85,11 @@ grpcurl -plaintext -d '{"begins_with": ""}' 0.0.0.0:50051 bicycle.Bicycle.GetDog
 grpcurl -plaintext -d '{"eq": "3"}' 0.0.0.0:50051 bicycle.Bicycle.DeleteDogsByPk
 ```
 
-## Clients
+## Client
 
-You can also use the ` ./__bicycle__/proto/bicycle.proto` (see example output below) to build your database clients.
+You can also use the ` ./__bicycle__/proto/bicycle.proto` (see example output below) to codegen your own database clients. Because the Bicycle server is just a gRPC server, any language with gRPC support also has Bicycle client support. 
 
-Because the Bicycle server is just a gRPC server, you can use the gRPC libraries for any language you like. Additionally, Bicycle servers implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md) you can also roll over to your preferred gRPC GUI client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
+Additionally, Bicycle servers implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can also roll over to your preferred gRPC desktop client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
 
 ```protobuf
 //  ./__bicycle__/proto/bicycle.proto
@@ -125,19 +125,55 @@ service Bicycle {
 }
 ```
 
+## Embedding
+
+In addition to the gRPC server based implementation, you can also use the generated `core` functions without using gRPC at all. The storage and request format remain protobuf, but without the remote server interaction.
+
+You can import the core functionality into your project by adding the generated `bicycle_core` as a dependency in your `Cargo.toml`
+
+```toml
+# embedded-dogs/Cargo.toml
+bicycle = { package = "bicycle_core", path = "__bicycle__/core" }
+```
+
+```rust
+// embedded-dogs/src/main.rs
+use bicycle::models::dog;
+use bicycle::proto::{index_query::Expression, Example, IndexQuery};
+
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    dog::put(Example {
+        pk: "DOG#1".to_string(),
+        name: "Leia".to_string(),
+        age: 3,
+        breed: "Pitty".to_string(),
+    })?;
+
+    let dog = dog::get_by_pk(IndexQuery {
+        expression: Some(Expression::Eq("DOG#1".to_string())),
+    })?;
+
+    println!("{:#?}", dog);
+
+    Ok(())
+}
+```
+
 ## SPROCS
 
-Stored procedures are supported and can be written in Rust with built with the `wasm32-wasi` target. Currently only `stdio` is inherited from the host context and the additional WASI APIs are not yet supported.
+Stored procedures are supported and can be written in Rust built for the `wasm32-wasi` target. Currently only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
 
-`bicycle sproc ...` commands depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi`.
+`bicycle sproc ...` commands depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
 
-For this example we want to create a stored procedure that will return us only the `Dog`'s names; to create a new SPROC we run the following
+For this example we want to create a stored procedure that will return us only the `Dog`'s names. To create a new SPROC we run the following
 
 ```bash
 cargo new dog-names-proc
 ```
 
-Some additional items need to be added to the `Cargo.toml`. The host shims are provided in the build output and will need to be added as a dependency, as well as setting your build target's name to a fixed `"proc"` and adjusting the release profile to produce smaller build sizes.
+Some additional items need to be added to the `Cargo.toml`. The host shims are provided by the build output in `__bicycle__` and will need to be added as a dependency. You will also need to set your build target's name to `"proc"` and optionally adjust the release profile to produce smaller WASM binaries.
 
 ```toml
 # dog-names-proc/Cargo.toml
@@ -159,10 +195,11 @@ opt-level = 'z'
 For a basic SPROC example we have the following which just uses the `get_input` to get the pull in the dynamic input passed in at call time, and pass back that same value as output. All SPROC I/O uses the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf message (`bicycle_shims` re-exports `prost-types` which provides the Rust implementation of the `Value` type).
 
 ```rust
+// dog-names-proc/src/main.rs
 use host::prost_types::{value::Kind, ListValue, Value};
 use host::{get_input, set_output};
 
-use host::models::dog::get_dogs_by_pk;
+use host::models::dog;
 use host::proto::{index_query::Expression, Dogs, IndexQuery};
 
 use std::error::Error;
@@ -178,7 +215,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None => "".to_string(),
     };
 
-    let Dogs { dogs } = get_dogs_by_pk(IndexQuery {
+    let Dogs { dogs } = dog::get_by_pk(IndexQuery {
         expression: Some(Expression::BeginsWith(val)),
     })?;
 

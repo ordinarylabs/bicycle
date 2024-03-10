@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use host::prost_types::{value::Kind, ListValue, Value};
 use host::{get_input, set_output};
 
-use host::models::example::get_examples_by_pk;
+use host::models::example;
 use host::proto::{index_query::Expression, Examples, IndexQuery};
 
 use std::error::Error;
@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None => "".to_string(),
     };
 
-    let Examples { examples } = get_examples_by_pk(IndexQuery {
+    let Examples { examples } = example::get_by_pk(IndexQuery {
         expression: Some(Expression::BeginsWith(val)),
     })?;
 

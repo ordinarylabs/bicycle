@@ -142,7 +142,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                let examples = match models::example::get_examples_by_pk(index_query) {
+                let examples = match models::example::get_by_pk(index_query) {
                     Ok(examples) => examples,
                     Err(_) => return 0,
                 };
@@ -168,7 +168,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                match models::example::delete_examples_by_pk(index_query) {
+                match models::example::delete_by_pk(index_query) {
                     Ok(_) => 1,
                     Err(_) => 0,
                 }
@@ -188,7 +188,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                match models::example::put_example(example) {
+                match models::example::put(example) {
                     Ok(_) => 1,
                     Err(_) => 0,
                 }
@@ -208,7 +208,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                match models::example::batch_put_examples(examples) {
+                match models::example::batch_put(examples) {
                     Ok(_) => 1,
                     Err(_) => 0,
                 }
