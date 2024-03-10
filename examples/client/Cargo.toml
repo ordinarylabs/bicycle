@@ -15,30 +15,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+[workspace]
+
 [package]
-name = "bicycle_core"
-version.workspace = true
+name = "example_client"
+version = "0.1.0"
 edition = "2021"
-license.workspace = true
-authors.workspace = true
-description = "Database interaction wrapper for the Bicycle framework"
-repository.workspace = true
-homepage.workspace = true
-categories.workspace = true
+authors = ["sean watters <sean@ordinarylabs.io>"]
+license = "AGPL-3.0-only"
 
 [dependencies]
-tonic = { workspace = true }
-prost = { workspace = true }
-prost-types = { workspace = true }
-parking_lot = { workspace = true }
-
-engine = { workspace = true }
-bicycle_proto = { workspace = true }
-
-wasi-common = "18.0.2"
-wasmtime = "18.0.2"
-
-[build-dependencies]
-tonic-build = { workspace = true }
-
-## TODO: use features to selectively export and compile the WASM and tonic re-exports
+bicycle = { package = "bicycle_core", path = "../../core" }
+tokio = { version = "1.36.0", features = ["rt", "macros", "rt-multi-thread"] }

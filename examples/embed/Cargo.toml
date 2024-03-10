@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# !! disconnected from primary workspace
 [workspace]
 
 [package]
-name = "test_embed"
+name = "example_embed"
 version = "0.1.0"
 edition = "2021"
 authors = ["sean watters <sean@ordinarylabs.io>"]

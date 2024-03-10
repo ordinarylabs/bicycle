@@ -1,5 +1,5 @@
 /*
-Bicycle is a protobuf defined database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -17,14 +17,20 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-pub mod models;
 pub use bicycle_proto as proto;
+pub use tonic;
+
+pub mod models;
+pub use models::*;
 
 use parking_lot::Mutex;
 use std::error::Error;
 use std::sync::Arc;
 
 use prost::Message;
+
+pub use prost;
+pub use prost_types;
 
 use wasi_common::{
     sync::{add_to_linker, WasiCtxBuilder},
@@ -142,7 +148,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                let examples = match models::example::get_by_pk(index_query) {
+                let examples = match get_examples_by_pk(index_query) {
                     Ok(examples) => examples,
                     Err(_) => return 0,
                 };
@@ -168,7 +174,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                match models::example::delete_by_pk(index_query) {
+                match delete_examples_by_pk(index_query) {
                     Ok(_) => 1,
                     Err(_) => 0,
                 }
@@ -188,7 +194,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                match models::example::put(example) {
+                match put_example(example) {
                     Ok(_) => 1,
                     Err(_) => 0,
                 }
@@ -208,7 +214,7 @@ pub fn exec(
                     Err(_) => return 0,
                 };
 
-                match models::example::batch_put(examples) {
+                match models::batch_put_examples(examples) {
                     Ok(_) => 1,
                     Err(_) => 0,
                 }

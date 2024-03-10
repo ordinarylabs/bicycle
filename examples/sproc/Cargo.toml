@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# !! disconnected from primary workspace
 [workspace]
 
 [package]
-name = "test_proc"
+name = "example_sproc"
 version = "0.1.0"
 edition = "2021"
 authors = ["sean watters <sean@ordinarylabs.io>"]
 license = "AGPL-3.0-only"
 
 [dependencies]
-host = { package = "bicycle_shims", path = "../../shims" }
+bicycle = { package = "bicycle_shims", path = "../../shims" }
 
 [profile.release]
 lto = true

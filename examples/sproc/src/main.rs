@@ -17,16 +17,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use host::prost_types::{value::Kind, ListValue, Value};
-use host::{get_input, set_output};
-
-use host::models::example;
-use host::proto::{index_query::Expression, Examples, IndexQuery};
+use bicycle;
+use bicycle::prost_types::{value::Kind, ListValue, Value};
+use bicycle::proto::{index_query::Expression, Examples, IndexQuery};
+use bicycle::{recv_in, send_out};
 
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let val: Option<Value> = get_input()?;
+    let val: Option<Value> = recv_in()?;
 
     let val = match val {
         Some(val) => match val.kind {
@@ -36,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None => "".to_string(),
     };
 
-    let Examples { examples } = example::get_by_pk(IndexQuery {
+    let Examples { examples } = bicycle::get_examples_by_pk(IndexQuery {
         expression: Some(Expression::BeginsWith(val)),
     })?;
 
@@ -47,7 +46,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<Vec<Value>>();
 
-    set_output(Some(Value {
+    send_out(Some(Value {
         kind: Some(Kind::ListValue(ListValue { values: pks })),
     }))?;
 

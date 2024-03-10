@@ -1,5 +1,5 @@
 /*
-Bicycle is a protobuf defined database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -28,18 +28,18 @@ extern "C" {
     fn host_batch_put_examples(ptr: i32, len: i32) -> i32;
 }
 
-pub fn get_by_pk(index_query: IndexQuery) -> Result<Examples, Box<dyn Error>> {
+pub fn get_examples_by_pk(index_query: IndexQuery) -> Result<Examples, Box<dyn Error>> {
     Ok(Examples { examples: vec![] })
 }
 
-pub fn delete_by_pk(index_query: IndexQuery) -> Result<(), Box<dyn Error>> {
+pub fn delete_examples_by_pk(index_query: IndexQuery) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn put(example: Example) -> Result<(), Box<dyn Error>> {
+pub fn put_example(example: Example) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn batch_put(examples: Examples) -> Result<(), Box<dyn Error>> {
+pub fn batch_put_examples(examples: Examples) -> Result<(), Box<dyn Error>> {
     Ok(())
 }

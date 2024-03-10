@@ -121,6 +121,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "example_sproc"
+version = "0.1.0"
+dependencies = [
+ "bicycle_shims",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -465,13 +472,6 @@ dependencies = [
  "fastrand",
  "rustix",
  "windows-sys",
-]
-
-[[package]]
-name = "test_proc"
-version = "0.1.0"
-dependencies = [
- "bicycle_shims",
 ]
 
 [[package]]

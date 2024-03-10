@@ -17,8 +17,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+pub use prost;
 pub use prost_types;
-pub mod models;
+
+mod models;
+pub use models::*;
 
 pub mod proto {
     tonic::include_proto!("bicycle.database");
@@ -47,7 +50,8 @@ pub extern "C" fn alloc(len: usize) -> *mut u8 {
 }
 
 /// gets the SPROC input from the host.
-pub fn get_input() -> Result<Option<Value>, Box<dyn Error>> {
+/// must always be the first thing called.
+pub fn recv_in() -> Result<Option<Value>, Box<dyn Error>> {
     let input = unsafe { host_get_input() };
 
     if input == 0 {
@@ -68,7 +72,7 @@ pub fn get_input() -> Result<Option<Value>, Box<dyn Error>> {
 
 /// sets the output value for the SPROC.
 /// must always be the last thing called.
-pub fn set_output(output: Option<Value>) -> Result<(), Box<dyn Error>> {
+pub fn send_out(output: Option<Value>) -> Result<(), Box<dyn Error>> {
     let res = match output {
         Some(out) => {
             let mut encoded_out = out.encode_to_vec();

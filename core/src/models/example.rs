@@ -1,5 +1,5 @@
 /*
-Bicycle is a protobuf defined database framework.
+Bicycle is a framework for managing data.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -24,13 +24,15 @@ use prost::Message;
 use bicycle_proto::{index_query::Expression, IndexQuery};
 
 use engine::{
-    batch_put as db_batch_put, delete_begins_with, delete_eq, delete_gte, delete_lte,
-    get_begins_with, get_eq, get_gte, get_lte, put as db_put,
+    batch_put, delete_begins_with, delete_eq, delete_gte, delete_lte, get_begins_with, get_eq,
+    get_gte, get_lte, put,
 };
 
 const MODEL_NAME: &'static str = "EXAMPLE";
 
-pub fn get_by_pk(query: IndexQuery) -> Result<Vec<bicycle_proto::Example>, Box<dyn Error>> {
+pub fn get_examples_by_pk(
+    query: IndexQuery,
+) -> Result<Vec<bicycle_proto::Example>, Box<dyn Error>> {
     if let Some(expression) = query.expression {
         match expression {
             Expression::Eq(val) => get_eq::<bicycle_proto::Example>(MODEL_NAME, val),
@@ -45,7 +47,7 @@ pub fn get_by_pk(query: IndexQuery) -> Result<Vec<bicycle_proto::Example>, Box<d
     }
 }
 
-pub fn delete_by_pk(query: IndexQuery) -> Result<(), Box<dyn Error>> {
+pub fn delete_examples_by_pk(query: IndexQuery) -> Result<(), Box<dyn Error>> {
     if let Some(expression) = query.expression {
         match expression {
             Expression::Eq(val) => delete_eq(MODEL_NAME, val),
@@ -58,16 +60,18 @@ pub fn delete_by_pk(query: IndexQuery) -> Result<(), Box<dyn Error>> {
     }
 }
 
-pub fn put(example: bicycle_proto::Example) -> Result<(), Box<dyn Error>> {
-    db_put(MODEL_NAME, example.pk.clone(), example.encode_to_vec())
+#[inline(always)]
+pub fn put_example(example: bicycle_proto::Example) -> Result<(), Box<dyn Error>> {
+    put(MODEL_NAME, example.pk.clone(), example.encode_to_vec())
 }
 
-pub fn batch_put(examples: bicycle_proto::Examples) -> Result<(), Box<dyn Error>> {
+#[inline]
+pub fn batch_put_examples(examples: bicycle_proto::Examples) -> Result<(), Box<dyn Error>> {
     let mut params = vec![];
 
     for example in examples.examples {
         params.push((example.pk.clone(), example.encode_to_vec()));
     }
 
-    db_batch_put(MODEL_NAME, params)
+    batch_put(MODEL_NAME, params)
 }

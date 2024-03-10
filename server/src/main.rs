@@ -22,7 +22,7 @@ use std::error::Error;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 
-use bicycle_core::models;
+use bicycle_core;
 use bicycle_proto as proto;
 
 use proto::bicycle_server::BicycleServer;
@@ -43,7 +43,7 @@ impl Bicycle for BicycleService {
         &self,
         req: Request<IndexQuery>,
     ) -> Result<Response<proto::Examples>, Status> {
-        match models::example::get_by_pk(req.into_inner()) {
+        match bicycle_core::get_examples_by_pk(req.into_inner()) {
             Ok(items) => Ok(Response::new(proto::Examples { examples: items })),
             Err(err) => {
                 let msg = format!("failed to GET 'Examples': {}", err.to_string());
@@ -56,7 +56,7 @@ impl Bicycle for BicycleService {
         &self,
         req: Request<IndexQuery>,
     ) -> Result<Response<Empty>, Status> {
-        match models::example::delete_by_pk(req.into_inner()) {
+        match bicycle_core::delete_examples_by_pk(req.into_inner()) {
             Ok(_) => Ok(Response::new(Empty {})),
             Err(err) => {
                 let msg = format!("failed to DELETE 'Examples': {}", err.to_string());
@@ -66,7 +66,7 @@ impl Bicycle for BicycleService {
     }
 
     async fn put_example(&self, req: Request<proto::Example>) -> Result<Response<Empty>, Status> {
-        if let Err(err) = models::example::put(req.into_inner()) {
+        if let Err(err) = bicycle_core::put_example(req.into_inner()) {
             let msg = format!("failed to PUT 'Example': {}", err.to_string());
 
             return Err(Status::internal(msg));
@@ -79,7 +79,7 @@ impl Bicycle for BicycleService {
         &self,
         req: Request<proto::Examples>,
     ) -> Result<Response<Empty>, Status> {
-        if let Err(err) = models::example::batch_put(req.into_inner()) {
+        if let Err(err) = bicycle_core::batch_put_examples(req.into_inner()) {
             let msg = format!("failed to BATCH PUT 'Examples': {}", err.to_string());
 
             return Err(Status::internal(msg));

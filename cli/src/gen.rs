@@ -265,8 +265,9 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
         );
 
         core_models_mod_rs = format!(
-            "{}pub mod {};\n",
+            "{}mod {};\npub use {}::*;",
             core_models_mod_rs,
+            model.name.to_snake_case(),
             model.name.to_snake_case()
         );
 
@@ -286,8 +287,9 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
         );
 
         shims_models_mod_rs = format!(
-            "{}pub mod {};\n",
-            shims_models_mod_rs,
+            "{}mod {};\npub use {}::*;",
+            core_models_mod_rs,
+            model.name.to_snake_case(),
             model.name.to_snake_case()
         );
 
