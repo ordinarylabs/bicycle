@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let val = match val {
         Some(val) => match val.kind {
-            Some(Kind::StringValue(str_val)) => str_val,
+            Some(Kind::StringValue(val)) => val,
             _ => "".to_string(),
         },
         None => "".to_string(),

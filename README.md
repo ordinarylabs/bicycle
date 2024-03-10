@@ -1,6 +1,8 @@
 # Bicycle 🚲
 
 [![ci](https://github.com//ordinarylabs/bicycle/actions/workflows/ci.yml/badge.svg)](https://github.com//ordinarylabs/bicycle/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/bicycle.svg)](https://crates.io/crates/bicycle)
+[![docs.rs](https://docs.rs/bicycle/badge.svg)](https://docs.rs/bicycle/)
 [![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
 [![dependency status](https://deps.rs/repo/github/ordinarylabs/bicycle/status.svg)](https://deps.rs/repo/github/ordinarylabs/bicycle)
 
@@ -87,7 +89,7 @@ grpcurl -plaintext -d '{"eq": "3"}' 0.0.0.0:50051 bicycle.Bicycle.DeleteDogsByPk
 
 You can also use the ` ./__bicycle__/proto/bicycle.proto` (see example output below) to build your database clients.
 
-Because the Bicycle server is just a gRPC server, you can use the gRPC libraries for any language you like. Additionally, Bicycle servers implement [server reflection] you can also roll over to your preferred gRPC GUI client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
+Because the Bicycle server is just a gRPC server, you can use the gRPC libraries for any language you like. Additionally, Bicycle servers implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md) you can also roll over to your preferred gRPC GUI client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
 
 ```protobuf
 //  ./__bicycle__/proto/bicycle.proto
@@ -170,7 +172,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let val = match val {
         Some(val) => match val.kind {
-            Some(Kind::StringValue(str_val)) => str_val,
+            Some(Kind::StringValue(val)) => val,
             _ => "".to_string(),
         },
         None => "".to_string(),
@@ -198,17 +200,21 @@ fn main() -> Result<(), Box<dyn Error>> {
 To test the procedure as a one-off against your Bicycle server
 
 ```bash
-bicycle sproc oneoff ./dog-names-proc --lang rust --addr http://0.0.0.0:50051 --args ""
+bicycle sproc oneoff ./dog-names-proc --addr http://0.0.0.0:50051 --lang rust --args ""
 ```
 
 To store the procedure on your Bicycle server for future execution
 
 ```bash
-bicycle sproc deploy ./dog-names-proc --name dog-names-proc --lang rust --addr http://0.0.0.0:50051 --args ""
+bicycle sproc deploy ./dog-names-proc --addr http://0.0.0.0:50051 --name dog-names-proc --lang rust
 ```
 
 To execute a previously stored procedure on your Bicycle server
 
 ```bash
-bicycle sproc deploy --name dog-names-proc --addr http://0.0.0.0:50051 --args ""
+bicycle sproc deploy --addr http://0.0.0.0:50051 --name dog-names-proc --args ""
 ```
+
+## License
+
+[AGPL-v3](https://opensource.org/license/AGPL-v3)
