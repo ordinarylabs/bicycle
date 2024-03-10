@@ -176,13 +176,13 @@ service Bicycle {
 
 ### Desktop GUIs
 
-Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0::50051`, and it can automatically load up all your RPCs.
+Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0::50051`, and they should be able to automatically load up all your RPCs.
 
 ## Embedding
 
 ### Rust
 
-In addition to the gRPC server based implementation, you can also use the generated Rust `core` functions without using gRPC at all. The query/storage format remain protobuf, but without the remote server interaction.
+In addition to the gRPC server based implementation, you can also use the generated Rust `core` functions without using gRPC at all. The query/storage formats remain protobuf, but without the remote server interaction.
 
 You can import the core functionality into your project by adding the generated `bicycle_core` as a dependency in your `Cargo.toml`
 
@@ -221,7 +221,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 Stored procedures are supported and can be written in Rust built for the `wasm32-wasi` target. Currently only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
 
-`bicycle sproc ...` commands depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
+`bicycle sproc` commands for building with `--lang rust` depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
 
 ### Definition
 
@@ -251,7 +251,11 @@ lto = true
 opt-level = 'z'
 ```
 
-For a basic SPROC example we have the following which just uses the `get_input` to get the pull in the dynamic input passed in at call time, and pass back that same value as output. All SPROC I/O uses the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf message (`bicycle_shims` re-exports `prost-types` which provides the Rust implementation of the `Value` type).
+For a basic SPROC example we have the following which uses the `recv_in` to get the dynamic input passed to the SPROC by the caller.
+
+Once we have the "begins_with" argument from `recv_in` we use the `get_dogs_by_pk` shim to grab the requested `Dog`s from the host, map over just their names, and then send the output back to the host via `send_out`. Once the host captures the result of `send_out` they will forward it onto the caller.
+
+NOTE: All SPROC I/O uses the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf message and `bicycle_shims` re-exports `prost-types` crate which provides the Rust implementation of the `Value` type for you.
 
 ```rust
 // dog-names-proc/src/main.rs
@@ -287,7 +291,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<Vec<Value>>();
 
-    // set output for host Bicycle server to read and send back to caller
+    // set output for host Bicycle server to read in and send back to caller
     send_out(Some(Value {
         kind: Some(Kind::ListValue(ListValue { values: names })),
     }))?;
