@@ -6,7 +6,7 @@
 [![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
 [![dependency status](https://deps.rs/repo/github/ordinarylabs/bicycle/status.svg)](https://deps.rs/repo/github/ordinarylabs/bicycle)
 
-Bicycle is a framework for defining database schemas with protobuf such that access patterns are generated as code and compiled into the database server itself. The goal is to reduce the overhead of query/response parsing at run time by using a binary serialization format and empowering the compiler do query planning ahead of time.
+A protobuf defined database framework.
 
 ## Install
 
@@ -249,7 +249,7 @@ bicycle sproc deploy ./dog-names-proc --addr http://0.0.0.0:50051 --name dog-nam
 To execute a previously stored procedure on your Bicycle server
 
 ```bash
-bicycle sproc deploy --addr http://0.0.0.0:50051 --name dog-names-proc --args ""
+bicycle sproc exec --addr http://0.0.0.0:50051 --name dog-names-proc --args ""
 ```
 
 ## License

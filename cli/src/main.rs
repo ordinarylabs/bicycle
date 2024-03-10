@@ -1,5 +1,5 @@
 /*
-Bicycle is a framework for managing data.
+Bicycle is a protobuf defined database framework.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -97,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 )
                 .subcommand(
                     command!("oneoff")
-                        .about("runs a one off stored procedure.")
+                        .about("sends up a one-off procedure.")
                         .arg(
                             arg!(<LIB_PATH> "relative path to the lib directory.")
                                 .value_parser(value_parser!(String)),
