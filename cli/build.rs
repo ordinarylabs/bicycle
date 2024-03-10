@@ -44,18 +44,8 @@ fn main() -> std::io::Result<()> {
     }
 
     copy(
-        manifest_path.join("core/build.rs"),
-        tmp_path.join("core/build.rs"),
-    )?;
-
-    copy(
         manifest_path.join("core/Cargo.toml"),
         tmp_path.join("core/Freight.toml"),
-    )?;
-
-    copy(
-        manifest_path.join("core/bicycle.proto"),
-        tmp_path.join("core/bicycle.proto"),
     )?;
 
     let tmp_core_src_path = tmp_path.join("core/src");
@@ -110,6 +100,40 @@ fn main() -> std::io::Result<()> {
         tmp_path.join("engines/rocksdb/src/lib.rs"),
     )?;
 
+    // PROTO
+
+    let tmp_proto_path = tmp_path.join("proto");
+
+    if !tmp_proto_path.exists() {
+        create_dir(tmp_proto_path)?;
+    }
+
+    copy(
+        manifest_path.join("proto/build.rs"),
+        tmp_path.join("proto/build.rs"),
+    )?;
+
+    copy(
+        manifest_path.join("proto/Cargo.toml"),
+        tmp_path.join("proto/Freight.toml"),
+    )?;
+
+    copy(
+        manifest_path.join("proto/bicycle.proto"),
+        tmp_path.join("proto/bicycle.proto"),
+    )?;
+
+    let tmp_proto_src_path = tmp_path.join("proto/src");
+
+    if !tmp_proto_src_path.exists() {
+        create_dir(tmp_proto_src_path)?;
+    }
+
+    copy(
+        manifest_path.join("proto/src/lib.rs"),
+        tmp_path.join("proto/src/lib.rs"),
+    )?;
+
     // SERVER
 
     let tmp_server_path = tmp_path.join("server");
@@ -132,6 +156,46 @@ fn main() -> std::io::Result<()> {
     copy(
         manifest_path.join("server/src/main.rs"),
         tmp_path.join("server/src/main.rs"),
+    )?;
+
+    // SHIMS
+
+    let tmp_shims_path = tmp_path.join("shims");
+
+    if !tmp_shims_path.exists() {
+        create_dir(tmp_shims_path)?;
+    }
+
+    copy(
+        manifest_path.join("shims/build.rs"),
+        tmp_path.join("shims/build.rs"),
+    )?;
+
+    copy(
+        manifest_path.join("shims/Cargo.toml"),
+        tmp_path.join("shims/Freight.toml"),
+    )?;
+
+    let tmp_shims_src_path = tmp_path.join("shims/src");
+
+    if !tmp_shims_src_path.exists() {
+        create_dir(tmp_shims_src_path)?;
+    }
+
+    copy(
+        manifest_path.join("shims/src/lib.rs"),
+        tmp_path.join("shims/src/lib.rs"),
+    )?;
+
+    let tmp_shims_src_models_path = tmp_path.join("shims/src/models");
+
+    if !tmp_shims_src_models_path.exists() {
+        create_dir(tmp_shims_src_models_path)?;
+    }
+
+    copy(
+        manifest_path.join("shims/src/models/example.rs"),
+        tmp_path.join("shims/src/models/example.rs"),
     )?;
 
     // SPROC

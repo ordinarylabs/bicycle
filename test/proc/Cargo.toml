@@ -26,9 +26,7 @@ authors = ["sean watters <sean@ordinarylabs.io>"]
 license = "AGPL-3.0-only"
 
 [dependencies]
-wee_alloc = "0.4.5"
-prost-types = "0.12.3"
-prost = "0.12.3"
+host = { package = "bicycle_shims", path = "../../shims" }
 
 [profile.release]
 lto = true

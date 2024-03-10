@@ -36,10 +36,9 @@ use crate::{gen, utils::Model, PRECOMPILE_DIR};
 /// * `schema_path` - path to the schema.proto file
 /// * `engine` - the database engine used
 pub fn create(schema_path: &str, engine: &str) -> Result<(), Box<dyn std::error::Error>> {
-    if Path::new(PRECOMPILE_DIR).exists() {
-        fs::remove_dir_all(PRECOMPILE_DIR)?;
+    if !Path::new(PRECOMPILE_DIR).exists() {
+        fs::create_dir(PRECOMPILE_DIR)?;
     }
-    fs::create_dir(PRECOMPILE_DIR)?;
 
     std::env::set_var("OUT_DIR", PRECOMPILE_DIR);
     let precompile_dir = PathBuf::from(PRECOMPILE_DIR);
@@ -48,7 +47,7 @@ pub fn create(schema_path: &str, engine: &str) -> Result<(), Box<dyn std::error:
 
     tonic_build::configure()
         .file_descriptor_set_path(&tmp_desc_path)
-        .compile(&[&schema_path], &["proto"])
+        .compile(&[&schema_path], &["."])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 
     let descriptor_bytes = fs::read(&tmp_desc_path)?;
@@ -119,66 +118,9 @@ fn main() {
 
     println!("🛠️  done building server. [{}ms]", now.elapsed().as_millis());
 
-    if !Path::new("../out").exists() {
-        fs::create_dir("../out")?;
-    }
-
-    let now = Instant::now();
-    println!("📦 moving proto file...");
-
-    let out = std::process::Command::new("mv")
-        .args(["./core/bicycle.proto", "../out"])
-        .stderr(std::process::Stdio::piped())
-        .output()?;
-
-    if !out.status.success() {
-        println!(
-            "failed to move proto file: {}",
-            String::from_utf8(out.stderr)?
-        );
-        exit(1)
-    }
-
-    println!(
-        "📦 done moving proto file. [{}ms]",
-        now.elapsed().as_millis()
-    );
-
-    let now = Instant::now();
-    println!("📦 moving server binary...");
-
-    let out = std::process::Command::new("mv")
-        .args(["./target/release/bicycle_server", "../out/server"])
-        .stderr(std::process::Stdio::piped())
-        .output()?;
-
-    if !out.status.success() {
-        println!(
-            "failed to move server binary: {}",
-            String::from_utf8(out.stderr)?
-        );
-        exit(1)
-    }
-
-    println!(
-        "📦 done moving server binary. [{}ms]",
-        now.elapsed().as_millis()
-    );
-
-    let now = Instant::now();
-    println!("📁 clearing {}...", PRECOMPILE_DIR);
-
-    // fs::remove_dir_all(&format!("../{}", PRECOMPILE_DIR))?;
-
-    println!(
-        "📁 cleared {}. [{}ms]",
-        PRECOMPILE_DIR,
-        now.elapsed().as_millis()
-    );
-
     println!("✅ done!");
 
-    println!("\n🚀 start server: ./out/server\n🚲 client codegen: ./out/bicycle.proto");
+    println!("\n🚀 start server: ./__bicycle__/target/release/bicycle_server\n🚲 client codegen: ./__bicycle__/proto/bicycle.proto");
 
     Ok(())
 }

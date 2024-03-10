@@ -22,7 +22,8 @@ use std::error::Error;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 
-use bicycle_core::{models, proto};
+use bicycle_core::models;
+use bicycle_proto as proto;
 
 use proto::bicycle_server::BicycleServer;
 use proto::FILE_DESCRIPTOR_SET;

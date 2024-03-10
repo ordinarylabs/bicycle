@@ -17,12 +17,5 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#![doc = include_str!("../../README.md")]
-
-pub(crate) const PRECOMPILE_DIR: &'static str = "./__bicycle__";
-
-mod create;
-pub use create::create;
-
-pub(crate) mod gen;
-pub(crate) mod utils;
+tonic::include_proto!("bicycle.database");
+pub const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("bicycle_descriptor");

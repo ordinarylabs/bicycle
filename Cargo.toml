@@ -60,6 +60,8 @@ bicycle_sproc = { workspace = true }
 members = [
     "core", 
     "engines/rocksdb",
+    "proto",
+    "shims",
     "server", 
     "sproc",
 ]
@@ -76,6 +78,8 @@ version = "0.2.0-alpha.0"
 [workspace.dependencies]
 lazy_static = "1.4.0"
 
+parking_lot = "0.12.1"
+
 prost = "0.12.3"
 prost-types = "0.12.3"
 
@@ -89,6 +93,7 @@ tokio-stream = "0.1.14"
 tokio = "1.36.0"
 
 bicycle_core = { path = "./core", version = "0.2.0-alpha.0" }
+bicycle_proto = { path = "./proto", version = "0.2.0-alpha.0" }
 bicycle_server = { path = "./server", version = "0.2.0-alpha.0" }
 bicycle_sproc = { path = "./sproc", version = "0.2.0-alpha.0" }
 

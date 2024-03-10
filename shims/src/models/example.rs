@@ -17,12 +17,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#![doc = include_str!("../../README.md")]
-
-pub(crate) const PRECOMPILE_DIR: &'static str = "./__bicycle__";
-
-mod create;
-pub use create::create;
-
-pub(crate) mod gen;
-pub(crate) mod utils;
+extern "C" {
+    fn host_get_examples_by_pk(ptr: i32, len: i32) -> i64;
+    fn host_delete_examples_by_pk(ptr: i32, len: i32) -> i32;
+    fn host_put_example(ptr: i32, len: i32) -> i32;
+    fn host_batch_put_examples(ptr: i32, len: i32) -> i32;
+}

@@ -48,38 +48,22 @@ Run the `create` command to generate your Bicycle server binary and protobuf def
 bicycle create schema.proto
 ```
 
-Now in the `out/` directory you'll have `server` and `bicycle.proto`.
-
-### Plugins
-
-Plugins allow you to mix functionality into your Bicycle server. Plugins are just basic Rust crates that export a gRPC file descriptor, `Server` and `Service` generated with [Tonic](https://github.com/hyperium/tonic); they can be added from the [crates.io](https://crates.io) registry, a relative path, or a git repository.
-
-Formatting for `--plugins` flag:
-
-- `crates.io:plugin-name@0.0.0` 
-- `path:plugin-name@../plugin-path` 
-- `git:plugin-name@https:://github.com/user/plugin-name.git#rev:4c59b707|branch:next|tag:0.0.0`
-
-```bash
-bicycle create schema.proto --plugins crates.io:bicycle-plugin-echo@0.1.0
-```
-
 ## Running
 
 You can now run the server binary with the following command.
 
 ```bash
-./out/server
+./__bicycle__/target/release/bicycle_server
 ```
 
 ## Clients
 
-You can also use the `./out/bicycle.proto` (see example output below) to build your database clients.
+You can also use the ` ./__bicycle__/proto/bicycle.proto` (see example output below) to build your database clients.
 
 Because the Bicycle server is just a gRPC server, you can use the gRPC libraries for any language you like. Additionally, Bicycle servers implement [server reflection] you can also roll over to your preferred gRPC GUI client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
 
 ```protobuf
-// out/bicycle.proto
+//  ./__bicycle__/proto/bicycle.proto
 syntax = "proto3";
 package bicycle;
 

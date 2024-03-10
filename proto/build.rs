@@ -17,12 +17,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#![doc = include_str!("../../README.md")]
+use std::{env, path::PathBuf};
 
-pub(crate) const PRECOMPILE_DIR: &'static str = "./__bicycle__";
+fn main() {
+    let precompile_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
-mod create;
-pub use create::create;
-
-pub(crate) mod gen;
-pub(crate) mod utils;
+    tonic_build::configure()
+        .file_descriptor_set_path(precompile_dir.join("bicycle_descriptor.bin"))
+        .compile(&["bicycle.proto"], &["."])
+        .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
+}

@@ -14,34 +14,21 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 [package]
-name = "bicycle_server"
+name = "bicycle_proto"
 version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "gRPC database server for the Bicycle framework"
+description = "Protobuf definitions for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
 categories.workspace = true
 
 [dependencies]
-bicycle_core = { workspace = true }
-bicycle_proto = { workspace = true }
-bicycle_sproc = { workspace = true }
-
-parking_lot = { workspace = true }
-prost = { workspace = true }
-
 tonic = { workspace = true }
-tonic-reflection = { workspace = true }
-
-lazy_static = { workspace = true }
-
-tokio-stream = { workspace = true }
-tokio = { workspace = true, features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
-
-jemallocator = "0.5.0"
+prost = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true }

@@ -19,8 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use prost::Message;
 
-use crate::proto;
-use proto::{index_query::Expression, IndexQuery};
+use bicycle_proto::{index_query::Expression, IndexQuery};
 
 use engine::{
     batch_put, delete_begins_with, delete_eq, delete_gte, delete_lte, get_begins_with, get_eq,
@@ -29,13 +28,15 @@ use engine::{
 
 const MODEL_NAME: &'static str = "EXAMPLE";
 
-pub fn get_examples_by_pk(query: IndexQuery) -> Result<Vec<proto::Example>, tonic::Status> {
+pub fn get_examples_by_pk(query: IndexQuery) -> Result<Vec<bicycle_proto::Example>, tonic::Status> {
     if let Some(expression) = query.expression {
         let res = match expression {
-            Expression::Eq(val) => get_eq::<proto::Example>(MODEL_NAME, val),
-            Expression::Gte(val) => get_gte::<proto::Example>(MODEL_NAME, val),
-            Expression::Lte(val) => get_lte::<proto::Example>(MODEL_NAME, val),
-            Expression::BeginsWith(val) => get_begins_with::<proto::Example>(MODEL_NAME, val),
+            Expression::Eq(val) => get_eq::<bicycle_proto::Example>(MODEL_NAME, val),
+            Expression::Gte(val) => get_gte::<bicycle_proto::Example>(MODEL_NAME, val),
+            Expression::Lte(val) => get_lte::<bicycle_proto::Example>(MODEL_NAME, val),
+            Expression::BeginsWith(val) => {
+                get_begins_with::<bicycle_proto::Example>(MODEL_NAME, val)
+            }
         };
 
         match res {
@@ -65,14 +66,14 @@ pub fn delete_examples_by_pk(query: IndexQuery) -> Result<(), tonic::Status> {
     }
 }
 
-pub fn put_example(example: proto::Example) -> Result<(), tonic::Status> {
+pub fn put_example(example: bicycle_proto::Example) -> Result<(), tonic::Status> {
     match put(MODEL_NAME, example.pk.clone(), example.encode_to_vec()) {
         Ok(res) => Ok(res),
         Err(err) => Err(tonic::Status::internal(err.to_string())),
     }
 }
 
-pub fn batch_put_examples(examples: proto::Examples) -> Result<(), tonic::Status> {
+pub fn batch_put_examples(examples: bicycle_proto::Examples) -> Result<(), tonic::Status> {
     let mut params = vec![];
 
     for example in examples.examples {

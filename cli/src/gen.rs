@@ -33,17 +33,9 @@ const WORKSPACE_CARGO_TOML: &'static str =
 
 // CORE
 
-const CORE_BUILD_RS: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/core/build.rs"
-));
 const CORE_CARGO_TOML: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/core/Freight.toml"
-));
-const CORE_BICYCLE_PROTO: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/core/bicycle.proto"
 ));
 const CORE_SRC_MODELS_EXAMPLE_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -65,6 +57,25 @@ const ENGINES_ROCKSDB_SRC_LIB_RS: &'static str = include_str!(concat!(
     "/cli/tmp/engines/rocksdb/src/lib.rs"
 ));
 
+// PROTO
+
+const PROTO_BUILD_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/proto/build.rs"
+));
+const PROTO_CARGO_TOML: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/proto/Freight.toml"
+));
+const PROTO_BICYCLE_PROTO: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/proto/bicycle.proto"
+));
+const PROTO_SRC_LIB_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/proto/src/lib.rs"
+));
+
 // SERVER
 
 const SERVER_CARGO_TOML: &'static str = include_str!(concat!(
@@ -74,6 +85,25 @@ const SERVER_CARGO_TOML: &'static str = include_str!(concat!(
 const SERVER_SRC_MAIN_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/server/src/main.rs"
+));
+
+// SHIMS
+
+const SHIMS_BUILD_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/shims/build.rs"
+));
+const SHIMS_CARGO_TOML: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/shims/Freight.toml"
+));
+const SHIMS_SRC_LIB_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/shims/src/lib.rs"
+));
+const SHIMS_SRC_MODELS_EXAMPLE_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/shims/src/models/example.rs"
 ));
 
 // SPROC
@@ -116,12 +146,12 @@ fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
 
 lazy_static! {
     static ref PROTO_MODEL_MESSAGES: String = get_between(
-        CORE_BICYCLE_PROTO,
+        PROTO_BICYCLE_PROTO,
         "##MODEL_MESSAGES_START##",
         Some("##MODEL_MESSAGES_END##"),
     );
     static ref PROTO_MODEL_RPCS: String = get_between(
-        CORE_BICYCLE_PROTO,
+        PROTO_BICYCLE_PROTO,
         "##MODEL_RPCS_START##",
         Some("##MODEL_RPCS_END##"),
     );
@@ -131,7 +161,7 @@ lazy_static! {
         Some("##END_HANDLERS##")
     );
     static ref SPROC_HOST_FNS: String = get_between(
-        SPROC_SRC_LIB_RS,
+        CORE_SRC_LIB_RS,
         "##START_HOST_FNS##",
         Some("##END_HOST_FNS##")
     );
@@ -161,12 +191,9 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
 
     // CORE
     create_dir("core")?;
-    write_file("core/build.rs", CORE_BUILD_RS)?;
     write_file("core/Cargo.toml", CORE_CARGO_TOML)?;
 
     create_dir("core/src")?;
-    write_file("core/src/lib.rs", CORE_SRC_LIB_RS)?;
-
     create_dir("core/src/models")?;
 
     // ENGINES
@@ -177,9 +204,30 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
     create_dir("engines/rocksdb/src")?;
     write_file("engines/rocksdb/src/lib.rs", ENGINES_ROCKSDB_SRC_LIB_RS)?;
 
+    // PROTO
+
+    create_dir("proto")?;
+    write_file("proto/build.rs", PROTO_BUILD_RS)?;
+    write_file("proto/Cargo.toml", PROTO_CARGO_TOML)?;
+
+    create_dir("proto/src")?;
+    write_file("proto/src/lib.rs", PROTO_SRC_LIB_RS)?;
+
     // SERVER
     create_dir("server")?;
     create_dir("server/src")?;
+    write_file("server/Cargo.toml", &SERVER_CARGO_TOML)?;
+
+    // SHIMS
+
+    create_dir("shims")?;
+    write_file("shims/build.rs", SHIMS_BUILD_RS)?;
+    write_file("shims/Cargo.toml", SHIMS_CARGO_TOML)?;
+
+    create_dir("shims/src")?;
+    write_file("shims/src/lib.rs", SHIMS_SRC_LIB_RS)?;
+
+    create_dir("shims/src/models")?;
 
     // SPROC
     create_dir("sproc")?;
@@ -188,12 +236,13 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
     write_file("sproc/sproc.proto", SPROC_RUNTIME_PROTO)?;
 
     create_dir("sproc/src")?;
-    create_dir("sproc/src/models")?;
+    write_file("sproc/src/lib.rs", &SPROC_SRC_LIB_RS)?;
 
     let mut rpc_block = "".to_string();
     let mut messages_block = "".to_string();
 
     let mut core_models_mod_rs = "".to_string();
+    let mut shims_models_mod_rs = "".to_string();
 
     let mut server_handlers_block = "".to_string();
 
@@ -221,12 +270,12 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
             model.name.to_snake_case()
         );
 
-        let model_file_content =
+        let core_src_model_rs_content =
             replace_model_name(&model, &CORE_SRC_MODELS_EXAMPLE_RS.to_string());
 
         write_file(
             &format!("core/src/models/{}.rs", model.name.to_snake_case()),
-            &model_file_content,
+            &core_src_model_rs_content,
         )?;
 
         server_handlers_block = format!(
@@ -235,6 +284,20 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
             if i == 0 { "" } else { "\n" },
             replace_model_name(&model, &SERVER_HANDLERS)
         );
+
+        shims_models_mod_rs = format!(
+            "{}pub mod {};\n",
+            shims_models_mod_rs,
+            model.name.to_snake_case()
+        );
+
+        let shims_src_model_rs_content =
+            replace_model_name(&model, &SHIMS_SRC_MODELS_EXAMPLE_RS.to_string());
+
+        write_file(
+            &format!("shims/src/models/{}.rs", model.name.to_snake_case()),
+            &shims_src_model_rs_content,
+        )?;
 
         sprocs_host_fns_block = format!(
             "{}{}{}",
@@ -245,24 +308,25 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
     }
 
     // CORE
-    let proto = CORE_BICYCLE_PROTO
+    let core_src_lib_rs =
+        CORE_SRC_LIB_RS.replace(&SPROC_HOST_FNS.to_string(), &sprocs_host_fns_block);
+    write_file("core/src/lib.rs", &core_src_lib_rs)?;
+    write_file("core/src/models/mod.rs", &core_models_mod_rs)?;
+
+    // PROTO
+    let proto = PROTO_BICYCLE_PROTO
         .replace(&PROTO_MODEL_RPCS.to_string(), &rpc_block)
         .replace(&PROTO_MODEL_MESSAGES.to_string(), &messages_block);
 
-    write_file("core/src/models/mod.rs", &core_models_mod_rs)?;
-    write_file("core/bicycle.proto", &proto)?;
+    write_file("proto/bicycle.proto", &proto)?;
 
-    // SPROC
-    let sprocs_src_lib_rs =
-        SPROC_SRC_LIB_RS.replace(&SPROC_HOST_FNS.to_string(), &sprocs_host_fns_block);
-
-    write_file("sproc/src/lib.rs", &sprocs_src_lib_rs)?;
-
-    write_file("server/Cargo.toml", &SERVER_CARGO_TOML)?;
-
+    // SERVER
     let server_src_main_rs =
         SERVER_SRC_MAIN_RS.replace(&SERVER_HANDLERS.to_string(), &server_handlers_block);
     write_file("server/src/main.rs", &server_src_main_rs)?;
+
+    // SHIMS
+    write_file("shims/src/models/mod.rs", &shims_models_mod_rs)?;
 
     Ok(())
 }

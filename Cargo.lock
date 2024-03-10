@@ -238,7 +238,21 @@ dependencies = [
 name = "bicycle_core"
 version = "0.2.0-alpha.0"
 dependencies = [
+ "bicycle_proto",
  "bicycle_rocksdb",
+ "parking_lot",
+ "prost",
+ "prost-types",
+ "tonic",
+ "tonic-build",
+ "wasi-common",
+ "wasmtime",
+]
+
+[[package]]
+name = "bicycle_proto"
+version = "0.2.0-alpha.0"
+dependencies = [
  "prost",
  "tonic",
  "tonic-build",
@@ -258,16 +272,27 @@ name = "bicycle_server"
 version = "0.2.0-alpha.0"
 dependencies = [
  "bicycle_core",
+ "bicycle_proto",
  "bicycle_sproc",
  "jemallocator",
  "lazy_static",
  "parking_lot",
  "prost",
- "serde",
  "tokio",
  "tokio-stream",
  "tonic",
+ "tonic-build",
  "tonic-reflection",
+]
+
+[[package]]
+name = "bicycle_shims"
+version = "0.2.0-alpha.0"
+dependencies = [
+ "prost",
+ "prost-types",
+ "tonic",
+ "tonic-build",
 ]
 
 [[package]]
@@ -275,7 +300,6 @@ name = "bicycle_sproc"
 version = "0.2.0-alpha.0"
 dependencies = [
  "bicycle_core",
- "parking_lot",
  "prost",
  "prost-types",
  "tokio",
@@ -283,8 +307,6 @@ dependencies = [
  "tonic",
  "tonic-build",
  "tonic-reflection",
- "wasi-common",
- "wasmtime",
 ]
 
 [[package]]
