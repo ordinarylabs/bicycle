@@ -6,7 +6,7 @@
 [![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
 [![dependency status](https://deps.rs/repo/github/ordinarylabs/bicycle/status.svg)](https://deps.rs/repo/github/ordinarylabs/bicycle)
 
-A protobuf defined database framework.
+Protobuf defined database framework.
 
 ## Install
 
