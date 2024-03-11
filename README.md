@@ -214,7 +214,7 @@ For this example we want to create a stored procedure that will return only the 
 cargo new dog-names-fn
 ```
 
-Some additional items need to be added to the `Cargo.toml`. The host shims are provided by the build output in `__bicycle__` and will need to be added as a dependency. You will also need to set your build target's name to `"proc"` and optionally adjust the release profile to produce smaller WASM binaries.
+Some additional items need to be added to the `Cargo.toml`. The host shims are provided by the build output in `__bicycle__` and will need to be added as a dependency. You will also need to set your build target's name to `"biplane_function"` and optionally adjust the release profile to produce smaller WASM binaries.
 
 ```toml
 # dog-names-fn/Cargo.toml
@@ -223,7 +223,7 @@ Some additional items need to be added to the `Cargo.toml`. The host shims are p
 [dependencies]
 bicycle = { package = "bicycle_shims", path = "__bicycle__/shims" }
 
-## set the binary name to "proc" so the CLI can deploy it
+## set the binary name to "biplane_function" so the CLI can deploy it
 [[bin]]
 path = "src/main.rs"
 name = "biplane_function"
