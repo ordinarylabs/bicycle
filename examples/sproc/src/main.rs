@@ -27,16 +27,24 @@ use std::error::Error;
 fn main() -> Result<(), Box<dyn Error>> {
     let val: Option<Value> = recv_in()?;
 
-    let val = match val {
-        Some(val) => match val.kind {
-            Some(Kind::StringValue(val)) => val,
-            _ => "".to_string(),
-        },
-        None => "".to_string(),
-    };
+    let mut begins_with = "".to_string();
+
+    if let Some(Value {
+        kind: Some(Kind::StructValue(struct_val)),
+    }) = val
+    {
+        if let Some(Kind::StringValue(val)) = struct_val
+            .fields
+            .get("begins_with")
+            .map(|v| v.kind.as_ref())
+            .flatten()
+        {
+            begins_with = val.clone()
+        }
+    }
 
     let Examples { examples } = bicycle::get_examples_by_pk(IndexQuery {
-        expression: Some(Expression::BeginsWith(val)),
+        expression: Some(Expression::BeginsWith(begins_with)),
     })?;
 
     let pks = examples
@@ -48,7 +56,5 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     send_out(Some(Value {
         kind: Some(Kind::ListValue(ListValue { values: pks })),
-    }))?;
-
-    Ok(())
+    }))
 }

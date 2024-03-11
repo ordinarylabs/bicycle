@@ -28,8 +28,10 @@ license = "AGPL-3.0-only"
 bicycle = { package = "bicycle_shims", path = "../../shims" }
 
 [profile.release]
+strip = true
 lto = true
 opt-level = 'z'
+codegen-units = 1
 
 [[bin]]
 path = "src/main.rs"

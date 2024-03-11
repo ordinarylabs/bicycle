@@ -21,7 +21,6 @@ use clap::{arg, command, value_parser, Command};
 use std::env;
 
 use bicycle_sproc::proto::{sproc_client::SprocClient, OneOff, Proc, Stored};
-use prost_types::Value;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -32,12 +31,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .arg_required_else_help(true)
         .subcommand(
             command!("build")
+            .arg_required_else_help(true)
                 .about("builds server, client, shims and proto definitions.")
                 .arg(
                     arg!(<SCHEMA_PATH> "path to the schema.proto file")
-                        .value_parser(value_parser!(String)),
+                        .value_parser(value_parser!(String)).required(true),
                 )
-                .arg_required_else_help(true)
                 .arg(
                     arg!(--"engine" <ENGINE> "specifies database engine.")
                         .value_parser(["rocksdb"])
@@ -46,63 +45,56 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .subcommand(
             command!("sproc")
+                .arg_required_else_help(true)
                 .about("commands for interacting with the stored procedure API.\n'--lang rust' depends on `cargo-wasi`")
                 .subcommand_required(true)
                 .subcommand(
                     command!("deploy")
+                        .arg_required_else_help(true)
                         .about("deploys a stored procedure.")
                         .arg(
                             arg!(<LIB_PATH> "relative path to the lib directory.")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(value_parser!(String)).required(true),
                         )
-                        .arg_required_else_help(true)
                         .arg(
                             arg!(--"addr" <ADDRESS> "address of the database (i.e http://0.0.0.0::50051)")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(value_parser!(String)).required(true),
                         )
-                        .arg_required_else_help(true)
                         .arg(
                             arg!(--"name" <NAME> "name for the stored procedure.")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(value_parser!(String)).required(true),
                         )
-                        .arg_required_else_help(true)
                         .arg(
                             arg!(--"lang" <LANGUAGE> "language to be compiled to WebAssembly.")
-                                .value_parser(["rust"]),
-                        )
-                        .arg_required_else_help(true)
-                        .arg(
-                            arg!(--"args" <ARGUMENTS> "arguments to be parsed into the protobuf Value WKT")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(["rust"]).required(true),
                         )
                 )
                 .subcommand(
                     command!("exec")
+                        .arg_required_else_help(true)
                         .about("runs a stored procedure.")
                         .arg_required_else_help(true)
                         .arg(
                             arg!(--"addr" <ADDRESS> "address of the database (i.e http://0.0.0.0::50051)")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(value_parser!(String)).required(true),
                         )
-                        .arg_required_else_help(true)
                         .arg(
                             arg!(--"name" <NAME> "name of stored procedure.")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(value_parser!(String)).required(true),
                         )
-                        .arg_required_else_help(true)
                         .arg(
-                            arg!(--"args" <ARGUMENTS> "arguments to be parsed into the protobuf Value WKT")
+                            arg!(--"args" <ARGUMENTS> "arguments to be parsed into the protobuf Value WKT\nformatted as JSON")
                                 .value_parser(value_parser!(String)),
                         )
                 )
                 .subcommand(
                     command!("oneoff")
+                        .arg_required_else_help(true)
                         .about("sends up a one-off procedure.")
                         .arg(
                             arg!(<LIB_PATH> "relative path to the lib directory.")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(value_parser!(String)).required(true),
                         )
-                        .arg_required_else_help(true)
                         .arg(
                             arg!(--"addr" <ADDRESS> "address of the database (i.e http://0.0.0.0::50051)")
                                 .value_parser(value_parser!(String)),
@@ -155,7 +147,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         println!("🦀 -> 🕸️  building WebAssembly...");
                         std::process::Command::new("cargo")
                             .args(["wasi", "build", "--release"])
-                            .env("RUSTFLAGS", "-Ctarget-feature=+multivalue")
                             .output()?;
 
                         let proc_bytes = std::fs::read("target/wasm32-wasi/release/proc.wasm")?;
@@ -187,18 +178,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .expect("required")
                     .to_string();
 
+                let args = match matches.get_one::<String>("args") {
+                    Some(args) => {
+                        println!("parsing args...");
+                        let json_value = serde_json::from_str(args)?;
+                        println!("args parsed.");
+
+                        json_to_proto(json_value)
+                    }
+                    None => prost_types::Value { kind: None },
+                };
+
                 println!("🚀 running procedure...");
                 let mut client = SprocClient::connect(addr).await?;
 
                 let request = tonic::Request::new(Stored {
                     name: name.to_string(),
-                    // TODO: accept args
-                    args: Some(Value { kind: None }),
+                    args: Some(args),
                 });
 
+                let now = std::time::Instant::now();
                 let response = client.exec_stored(request).await?;
+                println!("⏱️ round trip in {}ms", now.elapsed().as_millis());
 
-                println!("{:#?}", response);
+                let response_as_json = proto_to_json(response.into_inner());
+                println!("{}", response_as_json.to_string());
             }
             Some(("oneoff", matches)) => {
                 let lib_path = matches.get_one::<String>("LIB_PATH").expect("required");
@@ -212,6 +216,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .expect("required")
                     .to_string();
 
+                let args = match matches.get_one::<String>("args") {
+                    Some(args) => {
+                        println!("parsing args...");
+                        let json_value = serde_json::from_str(args)?;
+                        println!("args parsed.");
+
+                        json_to_proto(json_value)
+                    }
+                    None => prost_types::Value { kind: None },
+                };
+
                 match lang.as_str() {
                     "rust" => {
                         std::env::set_current_dir(lib_path)?;
@@ -219,7 +234,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         println!("🦀 -> 🕸️  building WebAssembly...");
                         std::process::Command::new("cargo")
                             .args(["wasi", "build", "--release"])
-                            .env("RUSTFLAGS", "-Ctarget-feature=+multivalue")
                             .output()?;
 
                         let proc_bytes = std::fs::read("target/wasm32-wasi/release/proc.wasm")?;
@@ -231,15 +245,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                         let request = tonic::Request::new(OneOff {
                             proc: proc_bytes,
-                            // TODO: accept args
-                            args: Some(Value {
-                                kind: Some(prost_types::value::Kind::BoolValue(false)),
-                            }),
+                            args: Some(args),
                         });
 
+                        let now = std::time::Instant::now();
                         let response = client.exec_one_off(request).await?;
+                        println!("⏱️ round trip in {}ms", now.elapsed().as_millis());
 
-                        println!("{:#?}", response);
+                        let response_as_json = proto_to_json(response.into_inner());
+                        println!("{}", response_as_json.to_string());
                     }
                     _ => unreachable!(),
                 }
@@ -250,4 +264,62 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     Ok(())
+}
+
+fn json_map_to_proto_struct(
+    json: serde_json::Map<String, serde_json::Value>,
+) -> prost_types::Struct {
+    prost_types::Struct {
+        fields: json
+            .into_iter()
+            .map(|(k, v)| (k, json_to_proto(v)))
+            .collect(),
+    }
+}
+
+pub fn json_to_proto(json: serde_json::Value) -> prost_types::Value {
+    let kind = match json {
+        serde_json::Value::Null => prost_types::value::Kind::NullValue(0),
+        serde_json::Value::Bool(v) => prost_types::value::Kind::BoolValue(v),
+        serde_json::Value::Number(n) => match n.as_f64() {
+            Some(n) => prost_types::value::Kind::NumberValue(n),
+            None => prost_types::value::Kind::NullValue(0),
+        },
+        serde_json::Value::String(s) => prost_types::value::Kind::StringValue(s),
+        serde_json::Value::Array(v) => {
+            prost_types::value::Kind::ListValue(prost_types::ListValue {
+                values: v.into_iter().map(json_to_proto).collect(),
+            })
+        }
+        serde_json::Value::Object(v) => {
+            prost_types::value::Kind::StructValue(json_map_to_proto_struct(v))
+        }
+    };
+
+    prost_types::Value { kind: Some(kind) }
+}
+
+pub fn proto_to_json(proto: prost_types::Value) -> serde_json::Value {
+    if let Some(kind) = proto.kind {
+        match kind {
+            prost_types::value::Kind::NullValue(_) => serde_json::Value::Null,
+            prost_types::value::Kind::BoolValue(v) => serde_json::Value::Bool(v),
+            prost_types::value::Kind::NumberValue(n) => match serde_json::Number::from_f64(n) {
+                Some(n) => serde_json::Value::Number(n),
+                None => serde_json::Value::Null,
+            },
+            prost_types::value::Kind::StringValue(s) => serde_json::Value::String(s),
+            prost_types::value::Kind::ListValue(lst) => {
+                serde_json::Value::Array(lst.values.into_iter().map(proto_to_json).collect())
+            }
+            prost_types::value::Kind::StructValue(v) => serde_json::Value::Object(
+                v.fields
+                    .into_iter()
+                    .map(|(k, v)| (k, proto_to_json(v)))
+                    .collect(),
+            ),
+        }
+    } else {
+        serde_json::Value::Null
+    }
 }

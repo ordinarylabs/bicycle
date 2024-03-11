@@ -246,9 +246,13 @@ path = "src/main.rs"
 name = "proc"
 
 ## recommended for smaller binaries
+## also see: https://github.com/johnthagen/min-sized-rust
 [profile.release]
+strip = true
 lto = true
 opt-level = 'z'
+codegen-units = 1
+panic = "abort"
 ```
 
 For a basic SPROC example we have the following which uses the `recv_in` to get the dynamic input passed to the SPROC by the caller.
@@ -270,13 +274,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     // get input from the host Bicycle server context, sent by caller
     let val: Option<Value> = recv_in()?;
 
-    let val = match val {
-        Some(val) => match val.kind {
-            Some(Kind::StringValue(val)) => val,
-            _ => "".to_string(),
-        },
-        None => "".to_string(),
-    };
+    let mut begins_with = "".to_string();
+
+    // extract "begins_with" from `Value`
+    if let Some(Value {
+        kind: Some(Kind::StructValue(struct_val)),
+    }) = val
+    {
+        if let Some(Kind::StringValue(val)) = struct_val
+            .fields
+            .get("begins_with")
+            .map(|v| v.kind.as_ref())
+            .flatten()
+        {
+            begins_with = val.clone()
+        }
+    }
 
     // get dogs from the host Bicycle server
     let Dogs { dogs } = bicycle::get_dogs_by_pk(IndexQuery {
@@ -294,9 +307,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // set output for host Bicycle server to read in and send back to caller
     send_out(Some(Value {
         kind: Some(Kind::ListValue(ListValue { values: names })),
-    }))?;
-
-    Ok(())
+    }))
 }
 ```
 
@@ -305,7 +316,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 To test the procedure as a one-off against your Bicycle server
 
 ```bash
-bicycle sproc oneoff ./dog-names-proc --addr http://0.0.0.0:50051 --lang rust --args ""
+bicycle sproc oneoff ./dog-names-proc --addr http://0.0.0.0:50051 --lang rust --args '{"begins_with": ""}'
 ```
 
 To store the procedure on your Bicycle server for future execution
@@ -317,7 +328,7 @@ bicycle sproc deploy ./dog-names-proc --addr http://0.0.0.0:50051 --name dog-nam
 To execute a previously stored procedure on your Bicycle server
 
 ```bash
-bicycle sproc exec --addr http://0.0.0.0:50051 --name dog-names-proc --args ""
+bicycle sproc exec --addr http://0.0.0.0:50051 --name dog-names-proc --args '{"begins_with": ""}'
 ```
 
 ## License

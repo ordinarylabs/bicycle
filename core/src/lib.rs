@@ -225,6 +225,8 @@ pub fn exec(
     )?;
     // ##END_HOST_FNS##
 
+    // TODO: modules need to be build once and stored.
+    // TODO: initialization takes ~250ms.
     let module = Module::new(&engine, src)?;
     linker.module(&mut store, "", &module)?;
 
