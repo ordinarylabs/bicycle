@@ -89,8 +89,6 @@ tonic = "0.10.2"
 tonic-build = "0.10.2"
 tonic-reflection = "0.10.2"
 
-rocksdb = "0.21.0"
-
 tokio-stream = "0.1.14"
 tokio = { version = "1.36.0", features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
 

@@ -27,8 +27,6 @@ homepage.workspace = true
 categories = ["database"]
 
 [dependencies]
-rocksdb = "0.21.0"
-
 r2d2 = "0.8.10"
 r2d2_sqlite = { version = "0.24.0", features = ["bundled"] }
 
