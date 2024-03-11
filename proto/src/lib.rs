@@ -17,5 +17,5 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-tonic::include_proto!("bicycle.database");
+tonic::include_proto!("bicycle");
 pub const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("bicycle_descriptor");

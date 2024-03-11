@@ -220,7 +220,7 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "bicycle"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "bicycle_sproc",
  "clap",
@@ -237,7 +237,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_core"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "bicycle_proto",
  "bicycle_rocksdb",
@@ -252,7 +252,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_proto"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "prost",
  "tonic",
@@ -261,7 +261,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_rocksdb"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "lazy_static",
  "prost",
@@ -270,7 +270,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_server"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "bicycle_core",
  "bicycle_proto",
@@ -288,7 +288,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_shims"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "prost",
  "prost-types",
@@ -299,7 +299,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_sproc"
-version = "0.2.0-alpha.0"
+version = "0.2.0-alpha.1"
 dependencies = [
  "bicycle_core",
  "prost",

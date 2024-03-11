@@ -288,7 +288,7 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
 
         shims_models_mod_rs = format!(
             "{}mod {};\npub use {}::*;",
-            core_models_mod_rs,
+            shims_models_mod_rs,
             model.name.to_snake_case(),
             model.name.to_snake_case()
         );

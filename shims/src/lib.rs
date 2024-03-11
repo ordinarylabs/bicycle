@@ -30,7 +30,7 @@ mod models;
 pub use models::*;
 
 pub mod proto {
-    tonic::include_proto!("bicycle.database");
+    tonic::include_proto!("bicycle");
 }
 
 use std::error::Error;
