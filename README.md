@@ -88,7 +88,7 @@ grpcurl -plaintext -d '{"begins_with": ""}' 0.0.0.0:50051 bicycle.Bicycle.GetDog
 grpcurl -plaintext -d '{"eq": "3"}' 0.0.0.0:50051 bicycle.Bicycle.DeleteDogsByPk
 ```
 
-## Clients
+## Client
 
 ### Rust
 
@@ -254,7 +254,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // get dogs from the host Bicycle server
     let Dogs { dogs } = bicycle::get_dogs_by_pk(IndexQuery {
-        expression: Some(Expression::BeginsWith(val)),
+        expression: Some(Expression::BeginsWith(begins_with)),
     })?;
 
     // build a list of dog names as `StringValue`s

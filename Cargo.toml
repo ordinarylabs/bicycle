@@ -29,7 +29,7 @@ readme = "README.md"
 include = ["/cli"]
 
 # !! comment out when publishing
-# build = "cli/build.rs"
+build = "cli/build.rs"
 
 [lib]
 name = "bicycle"

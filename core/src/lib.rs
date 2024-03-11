@@ -225,8 +225,10 @@ pub fn exec(
     )?;
     // ##END_HOST_FNS##
 
-    // TODO: modules need to be build once and stored.
-    // TODO: initialization takes ~250ms.
+    // TODO: modules may need to be built once and stored.
+    // TODO: initialization takes ~30ms.
+    // TODO: will require a change to how `recv_in()` is
+    // TODO: managed.
     let module = Module::new(&engine, src)?;
     linker.module(&mut store, "", &module)?;
 

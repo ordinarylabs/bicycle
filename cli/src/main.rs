@@ -144,14 +144,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "rust" => {
                         std::env::set_current_dir(lib_path)?;
 
-                        println!("🦀 -> 🕸️  building WebAssembly...");
+                        println!("🦀 targeting WebAssembly...");
                         std::process::Command::new("cargo")
                             .args(["wasi", "build", "--release"])
                             .output()?;
 
                         let proc_bytes = std::fs::read("target/wasm32-wasi/release/proc.wasm")?;
 
-                        println!("🕸️  WebAssembly build done.");
+                        println!("🕸️  compiled to WebAssembly.");
 
                         println!("📦 deploying procedure...");
                         let mut client = SprocClient::connect(addr).await?;
@@ -180,16 +180,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 let args = match matches.get_one::<String>("args") {
                     Some(args) => {
-                        println!("parsing args...");
+                        println!("📦 encoding proc args...");
                         let json_value = serde_json::from_str(args)?;
-                        println!("args parsed.");
+                        println!("📦 proc args encoded.");
 
                         json_to_proto(json_value)
                     }
                     None => prost_types::Value { kind: None },
                 };
 
-                println!("🚀 running procedure...");
+                println!("🚀 executing procedure...");
                 let mut client = SprocClient::connect(addr).await?;
 
                 let request = tonic::Request::new(Stored {
@@ -199,10 +199,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 let now = std::time::Instant::now();
                 let response = client.exec_stored(request).await?;
-                println!("⏱️ round trip in {}ms", now.elapsed().as_millis());
+                println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
 
                 let response_as_json = proto_to_json(response.into_inner());
-                println!("{}", response_as_json.to_string());
+                println!(
+                    "\nresponse:\n\n{}",
+                    serde_json::to_string_pretty(&response_as_json).unwrap()
+                );
             }
             Some(("oneoff", matches)) => {
                 let lib_path = matches.get_one::<String>("LIB_PATH").expect("required");
@@ -218,9 +221,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 let args = match matches.get_one::<String>("args") {
                     Some(args) => {
-                        println!("parsing args...");
+                        println!("📦 encoding proc args...");
                         let json_value = serde_json::from_str(args)?;
-                        println!("args parsed.");
+                        println!("📦 proc args encoded.");
 
                         json_to_proto(json_value)
                     }
@@ -231,16 +234,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "rust" => {
                         std::env::set_current_dir(lib_path)?;
 
-                        println!("🦀 -> 🕸️  building WebAssembly...");
+                        println!("🦀 targeting WebAssembly...");
                         std::process::Command::new("cargo")
                             .args(["wasi", "build", "--release"])
                             .output()?;
 
                         let proc_bytes = std::fs::read("target/wasm32-wasi/release/proc.wasm")?;
 
-                        println!("🕸️  WebAssembly build done.");
+                        println!("🕸️  compiled to WebAssembly.");
 
-                        println!("🚀 running procedure...");
+                        println!("🚀 executing procedure...");
                         let mut client = SprocClient::connect(addr).await?;
 
                         let request = tonic::Request::new(OneOff {
@@ -250,10 +253,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                         let now = std::time::Instant::now();
                         let response = client.exec_one_off(request).await?;
-                        println!("⏱️ round trip in {}ms", now.elapsed().as_millis());
+                        println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
 
                         let response_as_json = proto_to_json(response.into_inner());
-                        println!("{}", response_as_json.to_string());
+                        println!(
+                            "\nresponse:\n\n{}",
+                            serde_json::to_string_pretty(&response_as_json).unwrap()
+                        );
                     }
                     _ => unreachable!(),
                 }
