@@ -28,10 +28,10 @@ categories.workspace = true
 [dependencies]
 bicycle_core = { workspace = true }
 bicycle_proto = { workspace = true }
-bicycle_sproc = { workspace = true }
 
 parking_lot = { workspace = true }
 prost = { workspace = true }
+prost-types = { workspace = true }
 
 tonic = { workspace = true }
 tonic-reflection = { workspace = true }

@@ -35,4 +35,4 @@ codegen-units = 1
 
 [[bin]]
 path = "src/main.rs"
-name = "proc"
+name = "biplane_function"

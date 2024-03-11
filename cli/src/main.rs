@@ -23,7 +23,7 @@ use std::env;
 use std::fs;
 use std::process;
 
-use bicycle_sproc::proto::{sproc_client::SprocClient, OneOff, Proc, Stored};
+use bicycle_proto::{biplane_client::BiplaneClient, Fn, OneOff, Stored};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .about("starts server in the generated __bicycle__ directory.")
         )
         .subcommand(
-            command!("sproc")
+            command!("fn")
                 .arg_required_else_help(true)
                 .about("commands for interacting with the stored procedure API.\n'--lang rust' depends on `cargo-wasi`")
                 .subcommand_required(true)
@@ -129,7 +129,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             child.wait()?;
         }
-        Some(("sproc", matches)) => match matches.subcommand() {
+        Some(("fn", matches)) => match matches.subcommand() {
             Some(("deploy", matches)) => {
                 let addr = matches
                     .get_one::<String>("addr")
@@ -159,23 +159,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .args(["wasi", "build", "--release"])
                             .output()?;
 
-                        let proc_bytes = fs::read("target/wasm32-wasi/release/proc.wasm")?;
+                        let function_bytes =
+                            fs::read("target/wasm32-wasi/release/biplane_function.wasm")?;
 
                         println!("🕸️  compiled to WebAssembly.");
 
                         println!("📦 deploying procedure...");
-                        let mut client = SprocClient::connect(addr).await?;
+                        let mut client = BiplaneClient::connect(addr).await?;
 
-                        let request = tonic::Request::new(Proc {
+                        let request = tonic::Request::new(Fn {
                             name: name.to_string(),
-                            proc: proc_bytes,
+                            function: function_bytes,
                         });
 
                         client.deploy(request).await?;
 
                         println!("📦 procedure deployed.");
                     }
-                    _ => unreachable!(),
+                    _ => unimplemented!(),
                 }
             }
             Some(("invoke", matches)) => {
@@ -195,7 +196,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     None => prost_types::Value { kind: None },
                 };
 
-                let mut client = SprocClient::connect(addr).await?;
+                let mut client = BiplaneClient::connect(addr).await?;
 
                 let response = if let Some(name) = matches.get_one::<String>("name") {
                     let name = name.to_string();
@@ -207,7 +208,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     println!("🚀 executing procedure...");
                     let now = std::time::Instant::now();
-                    let response = client.exec_stored(request).await?;
+                    let response = client.invoke_stored(request).await?;
                     println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
                     response
                 } else {
@@ -229,18 +230,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .args(["wasi", "build", "--release"])
                         .output()?;
 
-                    let proc_bytes = fs::read("target/wasm32-wasi/release/proc.wasm")?;
+                    let function_bytes =
+                        fs::read("target/wasm32-wasi/release/biplane_function.wasm")?;
 
                     println!("🕸️  compiled to WebAssembly.");
 
                     let request = tonic::Request::new(OneOff {
-                        proc: proc_bytes,
+                        function: function_bytes,
                         args: Some(args),
                     });
 
                     println!("🚀 executing procedure...");
                     let now = std::time::Instant::now();
-                    let response = client.exec_one_off(request).await?;
+                    let response = client.invoke_one_off(request).await?;
                     println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
 
                     response

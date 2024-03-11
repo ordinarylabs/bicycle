@@ -222,39 +222,5 @@ fn main() -> std::io::Result<()> {
         tmp_path.join("shims/src/models/example.rs"),
     )?;
 
-    // SPROC
-
-    let tmp_sproc_path = tmp_path.join("sproc");
-
-    if !tmp_sproc_path.exists() {
-        create_dir(tmp_sproc_path)?;
-    }
-
-    copy(
-        manifest_path.join("sproc/build.rs"),
-        tmp_path.join("sproc/build.rs"),
-    )?;
-
-    copy(
-        manifest_path.join("sproc/Cargo.toml"),
-        tmp_path.join("sproc/Freight.toml"),
-    )?;
-
-    copy(
-        manifest_path.join("sproc/sproc.proto"),
-        tmp_path.join("sproc/sproc.proto"),
-    )?;
-
-    let tmp_sproc_wasm_src_path = tmp_path.join("sproc/src");
-
-    if !tmp_sproc_wasm_src_path.exists() {
-        create_dir(tmp_sproc_wasm_src_path)?;
-    }
-
-    copy(
-        manifest_path.join("sproc/src/lib.rs"),
-        tmp_path.join("sproc/src/lib.rs"),
-    )?;
-
     Ok(())
 }

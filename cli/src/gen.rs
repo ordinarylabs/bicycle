@@ -117,25 +117,6 @@ const SHIMS_SRC_MODELS_EXAMPLE_RS: &'static str = include_str!(concat!(
     "/cli/tmp/shims/src/models/example.rs"
 ));
 
-// SPROC
-
-const SPROC_CARGO_TOML: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/sproc/Freight.toml"
-));
-const SPROC_BUILD_RS: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/sproc/build.rs"
-));
-const SPROC_RUNTIME_PROTO: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/sproc/sproc.proto"
-));
-const SPROC_SRC_LIB_RS: &'static str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/cli/tmp/sproc/src/lib.rs"
-));
-
 fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
     let start = match content.find(from) {
         Some(i) => i + from.len() + 1,
@@ -257,15 +238,6 @@ pub(crate) fn gen(models: Vec<Model>, engine: &str) -> Result<(), Box<dyn std::e
     write_file("shims/src/lib.rs", SHIMS_SRC_LIB_RS)?;
 
     create_dir("shims/src/models")?;
-
-    // SPROC
-    create_dir("sproc")?;
-    write_file("sproc/Cargo.toml", SPROC_CARGO_TOML)?;
-    write_file("sproc/build.rs", SPROC_BUILD_RS)?;
-    write_file("sproc/sproc.proto", SPROC_RUNTIME_PROTO)?;
-
-    create_dir("sproc/src")?;
-    write_file("sproc/src/lib.rs", &SPROC_SRC_LIB_RS)?;
 
     let mut rpc_block = "".to_string();
     let mut messages_block = "".to_string();

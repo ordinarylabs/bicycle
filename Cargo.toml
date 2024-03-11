@@ -21,7 +21,7 @@ version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "Builder tool for the Bicycle framework"
+description = "CLI for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
 categories = ["command-line-utilities", "database"]
@@ -55,7 +55,7 @@ tokio = { workspace = true }
 tonic = { workspace = true }
 tonic-build = { workspace = true }
 
-bicycle_sproc = { workspace = true }
+bicycle_proto = { workspace = true }
 
 [workspace]
 members = [
@@ -64,8 +64,7 @@ members = [
     "engines/sqlite",
     "proto",
     "shims",
-    "server", 
-    "sproc",
+    "server",
 ]
 
 [workspace.package]
@@ -98,6 +97,4 @@ engine = { package = "bicycle_sqlite", path = "./engines/sqlite", version = "0.2
 
 bicycle_proto = { path = "./proto", version = "0.2.0-alpha.2" }
 bicycle_core = { path = "./core", version = "0.2.0-alpha.2" }
-bicycle_sproc = { path = "./sproc", version = "0.2.0-alpha.2" }
 bicycle_server = { path = "./server", version = "0.2.0-alpha.2" }
-

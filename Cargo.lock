@@ -228,7 +228,7 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 name = "bicycle"
 version = "0.2.0-alpha.2"
 dependencies = [
- "bicycle_sproc",
+ "bicycle_proto",
  "clap",
  "heck",
  "lazy_static",
@@ -261,6 +261,7 @@ name = "bicycle_proto"
 version = "0.2.0-alpha.2"
 dependencies = [
  "prost",
+ "prost-types",
  "tonic",
  "tonic-build",
 ]
@@ -280,11 +281,11 @@ version = "0.2.0-alpha.2"
 dependencies = [
  "bicycle_core",
  "bicycle_proto",
- "bicycle_sproc",
  "jemallocator",
  "lazy_static",
  "parking_lot",
  "prost",
+ "prost-types",
  "tokio",
  "tokio-stream",
  "tonic",
@@ -301,20 +302,6 @@ dependencies = [
  "tonic",
  "tonic-build",
  "wee_alloc",
-]
-
-[[package]]
-name = "bicycle_sproc"
-version = "0.2.0-alpha.2"
-dependencies = [
- "bicycle_core",
- "prost",
- "prost-types",
- "tokio",
- "tokio-stream",
- "tonic",
- "tonic-build",
- "tonic-reflection",
 ]
 
 [[package]]

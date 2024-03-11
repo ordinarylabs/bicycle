@@ -29,6 +29,7 @@ categories.workspace = true
 [dependencies]
 tonic = { workspace = true }
 prost = { workspace = true }
+prost-types = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true }

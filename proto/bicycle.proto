@@ -20,6 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 syntax = "proto3";
 package bicycle;
 
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
 // ##MODEL_MESSAGES_START##
 message Examples { 
   repeated Example examples = 1; 
@@ -40,13 +43,46 @@ message IndexQuery {
 
 // Server Messages
 
-message Empty {}
-
 service Bicycle {
   // ##MODEL_RPCS_START##
   rpc GetExamplesByPk(IndexQuery) returns (Examples) {}
-  rpc DeleteExamplesByPk(IndexQuery) returns (Empty) {}
-  rpc PutExample(Example) returns (Empty) {}
-  rpc BatchPutExamples(Examples) returns (Empty) {}
+  rpc DeleteExamplesByPk(IndexQuery) returns (google.protobuf.Empty) {}
+  rpc PutExample(Example) returns (google.protobuf.Empty) {}
+  rpc BatchPutExamples(Examples) returns (google.protobuf.Empty) {}
   // ##MODEL_RPCS_END##
+}
+
+// SPROCS
+
+message FnName {
+  string name = 1;
+}
+
+message Fn {
+  string name = 1;
+  bytes function = 2;
+}
+
+message Fns {
+  repeated Fn functions = 1;
+}
+
+message OneOff {
+  bytes function = 1;
+  google.protobuf.Value args = 2;
+}
+
+message Stored {
+  string name = 1;
+  google.protobuf.Value args = 2;
+}
+
+service Biplane {
+  rpc Remove(FnName) returns (google.protobuf.Empty) {}
+  rpc Deploy(Fn) returns (google.protobuf.Empty) {}
+
+  rpc List(google.protobuf.Empty) returns (Fns) {}
+
+  rpc InvokeOneOff(OneOff) returns (google.protobuf.Value) {}
+  rpc InvokeStored(Stored) returns (google.protobuf.Value) {}
 }
