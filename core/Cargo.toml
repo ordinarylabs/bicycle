@@ -40,5 +40,3 @@ wasmtime = "18.0.2"
 
 [build-dependencies]
 tonic-build = { workspace = true }
-
-## TODO: use features to selectively export and compile the WASM and tonic re-exports

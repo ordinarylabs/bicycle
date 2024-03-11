@@ -88,13 +88,14 @@ impl Bicycle for BicycleService {
     // ##END_HANDLERS##
 }
 
+use parking_lot::RwLock;
 use std::collections::BTreeMap;
 use std::fs::{create_dir, read_dir, remove_file, File};
 use std::io::{Read, Write};
 use std::path::Path;
-use std::sync::RwLock;
 
-use bicycle_core::exec;
+use bicycle_core::biplane::wasmtime::{Engine, Module};
+use bicycle_core::biplane::{compile_module, invoke_module};
 
 use proto::biplane_server::{Biplane, BiplaneServer};
 use proto::{Fn, FnName, Fns, OneOff, Stored};
@@ -102,14 +103,16 @@ use proto::{Fn, FnName, Fns, OneOff, Stored};
 const SCRIPT_DIR: &'static str = "__bicycle.biplane__";
 
 pub struct BiplaneService {
-    functions: RwLock<BTreeMap<String, Vec<u8>>>,
+    engine: Engine,
+    modules: RwLock<BTreeMap<String, Module>>,
 }
 
 impl BiplaneService {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let function_dir = Path::new(SCRIPT_DIR);
 
-        let mut functions = BTreeMap::new();
+        let engine = Engine::default();
+        let mut modules = BTreeMap::new();
 
         if !function_dir.exists() {
             create_dir(function_dir)?;
@@ -124,12 +127,13 @@ impl BiplaneService {
 
                 File::open(&path)?.read_to_end(&mut function)?;
 
-                functions.insert(name.to_string(), function);
+                modules.insert(name.to_string(), compile_module(&function, &engine)?);
             }
         }
 
         Ok(Self {
-            functions: RwLock::new(functions),
+            engine,
+            modules: RwLock::new(modules),
         })
     }
 }
@@ -142,7 +146,7 @@ impl Biplane for BiplaneService {
 
         remove_file(function_dir.join(&name))?;
 
-        self.functions.write().unwrap().remove(&name);
+        self.modules.write().remove(&name);
 
         Ok(Response::new(()))
     }
@@ -154,18 +158,22 @@ impl Biplane for BiplaneService {
         let mut file = File::create(function_dir.join(&name))?;
         file.write_all(&function)?;
 
-        self.functions.write().unwrap().insert(name, function);
-
-        Ok(Response::new(()))
+        if let Ok(module) = compile_module(&function, &self.engine) {
+            self.modules.write().insert(name, module);
+            Ok(Response::new(()))
+        } else {
+            Err(Status::aborted("failed to compile module"))
+        }
     }
 
     async fn list(&self, _req: Request<()>) -> Result<Response<Fns>, Status> {
         let mut functions = vec![];
 
-        for (name, function) in &*self.functions.read().unwrap() {
+        for (name, _) in &*self.modules.read() {
             functions.push(Fn {
                 name: name.to_string(),
-                function: function.clone(),
+                // TODO: read the zip file from file system
+                function: vec![],
             })
         }
 
@@ -178,9 +186,13 @@ impl Biplane for BiplaneService {
     ) -> Result<Response<prost_types::Value>, Status> {
         let OneOff { function, args } = req.into_inner();
 
-        match exec(&function, &args) {
-            Ok(value) => Ok(Response::new(value)),
-            Err(err) => Err(Status::internal(err.to_string())),
+        if let Ok(module) = compile_module(&function, &self.engine) {
+            match invoke_module(&self.engine, &module, &args) {
+                Ok(value) => Ok(Response::new(value)),
+                Err(err) => Err(Status::internal(err.to_string())),
+            }
+        } else {
+            Err(Status::aborted("failed to compile module"))
         }
     }
 
@@ -190,8 +202,8 @@ impl Biplane for BiplaneService {
     ) -> Result<Response<prost_types::Value>, Status> {
         let Stored { name, args } = req.into_inner();
 
-        if let Some(function) = self.functions.read().unwrap().get(&name) {
-            match exec(function, &args) {
+        if let Some(function) = self.modules.read().get(&name) {
+            match invoke_module(&self.engine, function, &args) {
                 Ok(value) => Ok(Response::new(value)),
                 Err(err) => Err(Status::internal(err.to_string())),
             }

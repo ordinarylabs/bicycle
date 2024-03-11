@@ -29,7 +29,7 @@ use r2d2_sqlite::SqliteConnectionManager;
 
 lazy_static! {
     static ref SQLITE_POOL: r2d2::Pool<SqliteConnectionManager> = {
-        let manager = SqliteConnectionManager::file("__bicycle.sqlite__");
+        let manager = SqliteConnectionManager::file("__bicycle.engine.sqlite__");
 
         let pool = r2d2::Pool::new(manager).expect("unable to create connection pool");
 
