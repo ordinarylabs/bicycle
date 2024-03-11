@@ -218,6 +218,8 @@ impl Biplane for BiplaneService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
+
     let addr = "[::0]:50051".parse()?;
 
     let reflection_service = tonic_reflection::server::Builder::configure()
@@ -225,7 +227,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .build()
         .unwrap();
 
-    println!("Bicycle Server 🚲 listening at: {}", addr);
+    log::info!("Bicycle Server 🚲 listening at: {}", addr);
 
     Server::builder()
         .add_service(BicycleServer::new(BicycleService {}))

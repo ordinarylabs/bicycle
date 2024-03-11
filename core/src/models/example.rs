@@ -35,11 +35,11 @@ pub fn get_examples_by_pk(
 ) -> Result<Vec<bicycle_proto::Example>, Box<dyn Error>> {
     if let Some(expression) = query.expression {
         match expression {
-            Expression::Eq(val) => get_eq::<bicycle_proto::Example>(MODEL_NAME, val),
-            Expression::Gte(val) => get_gte::<bicycle_proto::Example>(MODEL_NAME, val),
-            Expression::Lte(val) => get_lte::<bicycle_proto::Example>(MODEL_NAME, val),
+            Expression::Eq(val) => get_eq::<bicycle_proto::Example>(MODEL_NAME, &val),
+            Expression::Gte(val) => get_gte::<bicycle_proto::Example>(MODEL_NAME, &val),
+            Expression::Lte(val) => get_lte::<bicycle_proto::Example>(MODEL_NAME, &val),
             Expression::BeginsWith(val) => {
-                get_begins_with::<bicycle_proto::Example>(MODEL_NAME, val)
+                get_begins_with::<bicycle_proto::Example>(MODEL_NAME, &val)
             }
         }
     } else {
@@ -50,10 +50,10 @@ pub fn get_examples_by_pk(
 pub fn delete_examples_by_pk(query: IndexQuery) -> Result<(), Box<dyn Error>> {
     if let Some(expression) = query.expression {
         match expression {
-            Expression::Eq(val) => delete_eq(MODEL_NAME, val),
-            Expression::Gte(val) => delete_gte(MODEL_NAME, val),
-            Expression::Lte(val) => delete_lte(MODEL_NAME, val),
-            Expression::BeginsWith(val) => delete_begins_with(MODEL_NAME, val),
+            Expression::Eq(val) => delete_eq(MODEL_NAME, &val),
+            Expression::Gte(val) => delete_gte(MODEL_NAME, &val),
+            Expression::Lte(val) => delete_lte(MODEL_NAME, &val),
+            Expression::BeginsWith(val) => delete_begins_with(MODEL_NAME, &val),
         }
     } else {
         Err("no expression provided".into())

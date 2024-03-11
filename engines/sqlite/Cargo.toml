@@ -32,3 +32,4 @@ r2d2_sqlite = { version = "0.24.0", features = ["bundled"] }
 
 lazy_static = { workspace = true }
 prost = { workspace = true }
+log = { workspace = true }

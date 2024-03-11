@@ -41,6 +41,9 @@ lazy_static = { workspace = true }
 tokio-stream = { workspace = true }
 tokio = { workspace = true }
 
+env_logger = { workspace = true }
+log = { workspace = true }
+
 jemallocator = "0.5.0"
 
 [build-dependencies]

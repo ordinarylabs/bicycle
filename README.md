@@ -330,8 +330,6 @@ SPROCS are not yet transactional, so any error that causes the procedure to term
 
 Only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
 
-Currently all SPROC invocations freshly compile the WebAssembly binary using the [wasmtime](https://docs.rs/wasmtime/latest/wasmtime/) `Module::new()` function; this operation makes up the majority of the overhead used by the SPROC invocation and can add 10s of milliseconds depending on the environment. This will be optimized away in the future by caching the modules.
-
 ## License
 
 [AGPL-v3](https://opensource.org/license/AGPL-v3)

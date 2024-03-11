@@ -27,6 +27,8 @@ use r2d2_sqlite::rusqlite::Statement;
 use r2d2_sqlite::rusqlite;
 use r2d2_sqlite::SqliteConnectionManager;
 
+use log::{error, info};
+
 lazy_static! {
     static ref SQLITE_POOL: r2d2::Pool<SqliteConnectionManager> = {
         let manager = SqliteConnectionManager::file("__bicycle.engine.sqlite__");
@@ -58,7 +60,10 @@ where
         let v: Vec<u8> = row.get(0)?;
         let res: Result<T, rusqlite::Error> = match prost::Message::decode(&*v) {
             Ok(decoded) => Ok(decoded),
-            Err(_) => Err(rusqlite::Error::InvalidQuery),
+            Err(_) => {
+                error!("failed to decode record");
+                Err(rusqlite::Error::InvalidQuery)
+            }
         };
 
         res
@@ -79,9 +84,10 @@ where
 
 pub fn put(model: &'static str, k: String, v: Vec<u8>) -> Result<(), Box<dyn Error>> {
     SQLITE_POOL.get()?.execute(
-        "INSERT INTO records (pk, b) VALUES (?1, ?2)",
+        "INSERT OR REPLACE INTO records (pk, b) VALUES (?1, ?2)",
         (&format!("{}#{}", model, k), &v),
     )?;
+    info!("put {}", model);
     Ok(())
 }
 
@@ -94,87 +100,100 @@ pub fn batch_put(
 
     for (k, v) in params {
         tx.execute(
-            "INSERT INTO records (pk, b) VALUES (?1, ?2)",
+            "INSERT OR REPLACE INTO records (pk, b) VALUES (?1, ?2)",
             (&format!("{}#{}", model, k), &v),
         )?;
     }
 
     tx.commit()?;
+    info!("batch_put {}", model);
     Ok(())
 }
 
 // GET
 
-pub fn get_eq<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_eq<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
     let conn = SQLITE_POOL.get()?;
     let mut stmt = conn.prepare("SELECT b FROM records WHERE pk = ?")?;
 
-    get_from_statement(&mut stmt, &format!("{}#{}", model, val))
+    let res = get_from_statement(&mut stmt, &format!("{}#{}", model, val))?;
+    info!("get_eq {}", model);
+    Ok(res)
 }
 
-pub fn get_gte<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_gte<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
     let conn = SQLITE_POOL.get()?;
     let mut stmt = conn.prepare("SELECT b FROM records WHERE pk >= ?")?;
 
-    get_from_statement(&mut stmt, &format!("{}#{}", model, val))
+    let res = get_from_statement(&mut stmt, &format!("{}#{}", model, val))?;
+    info!("get_gte {}", model);
+    Ok(res)
 }
 
-pub fn get_lte<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_lte<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
     let conn = SQLITE_POOL.get()?;
     let mut stmt = conn.prepare("SELECT b FROM records WHERE pk <= ?")?;
 
-    get_from_statement(&mut stmt, &format!("{}#{}", model, val))
+    let res = get_from_statement(&mut stmt, &format!("{}#{}", model, val))?;
+    info!("get_lte {}", model);
+    Ok(res)
 }
 
-pub fn get_begins_with<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_begins_with<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
     let conn = SQLITE_POOL.get()?;
     let mut stmt = conn.prepare("SELECT b FROM records WHERE pk LIKE ?")?;
 
-    get_from_statement(&mut stmt, &format!("{}#{}%", model, val))
+    let res = get_from_statement(&mut stmt, &format!("{}#{}%", model, val))?;
+    info!("get_begins_with {}", model);
+    Ok(res)
 }
 
 // DELETE
 
-pub fn delete_eq(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_eq(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     SQLITE_POOL.get()?.execute(
         "DELETE FROM records WHERE pk = ?",
         &[&format!("{}#{}", model, val)],
     )?;
+    info!("delete_eq {}", model);
     Ok(())
 }
 
-pub fn delete_gte(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_gte(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     SQLITE_POOL.get()?.execute(
         "DELETE FROM records WHERE pk >= ?",
         &[&format!("{}#{}", model, val)],
     )?;
+    info!("delete_gte {}", model);
     Ok(())
 }
 
-pub fn delete_lte(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_lte(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     SQLITE_POOL.get()?.execute(
         "DELETE FROM records WHERE pk <= ?",
         &[&format!("{}#{}", model, val)],
     )?;
+    info!("delete_lte {}", model);
     Ok(())
 }
 
-pub fn delete_begins_with(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_begins_with(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     SQLITE_POOL.get()?.execute(
         "DELETE FROM records WHERE pk LIKE ?",
         &[&format!("{}#{}%", model, val)],
     )?;
+    info!("delete_begins_with {}", model);
     Ok(())
 }

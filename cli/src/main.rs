@@ -49,6 +49,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(
             command!("start")
                 .about("starts server in the generated __bicycle__ directory.")
+                .arg(
+                    arg!(--"log" <LOG_LEVEL> "set the log level for the database server")
+                        .value_parser(["info", "warn", "error", "debug", "trace", "off"])
+                        .default_value("info"),
+                )
         )
         .subcommand(
             command!("fn")
@@ -116,11 +121,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             bicycle::build(schema_path, engine)?;
         }
-        Some(("start", _)) => {
+        Some(("start", matches)) => {
+            let log = matches
+                .get_one::<String>("log")
+                .expect("default value provided");
+
             env::set_current_dir("./__bicycle__")?;
 
             let mut child = process::Command::new("./target/release/bicycle_server")
                 .stdout(process::Stdio::piped())
+                .env("RUST_LOG", log)
                 .spawn()?;
 
             if let Some(mut child_out) = child.stdout.take() {

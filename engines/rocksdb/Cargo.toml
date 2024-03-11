@@ -31,3 +31,4 @@ rocksdb = "0.21.0"
 
 lazy_static = { workspace = true }
 prost = { workspace = true }
+log = { workspace = true }

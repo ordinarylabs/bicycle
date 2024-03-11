@@ -27,6 +27,8 @@ use rocksdb::{
     DBAccess, DBIteratorWithThreadMode, Direction, IteratorMode, Options, WriteBatch, DB,
 };
 
+use log::{error, info};
+
 lazy_static! {
     static ref ROCKSDB: DB = {
         let mut opts = Options::default();
@@ -55,6 +57,7 @@ where
                 if let Ok(item) = prost::Message::decode(&*v) {
                     items.push(item);
                 } else {
+                    error!("failed to decode record");
                     break;
                 }
             } else {
@@ -94,6 +97,7 @@ where
 
 pub fn put(model: &'static str, k: String, v: Vec<u8>) -> Result<(), Box<dyn Error>> {
     ROCKSDB.put(format!("{}#{}", model, k).as_bytes(), v)?;
+    info!("put {}", model);
     Ok(())
 }
 
@@ -108,25 +112,29 @@ pub fn batch_put(
     }
 
     ROCKSDB.write(batch)?;
+    info!("batch_put {}", model);
     Ok(())
 }
 
 // GET
 
-pub fn get_eq<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_eq<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
     let res = ROCKSDB.get(format!("{}#{}", model, val).as_bytes())?;
 
     if let Some(res) = res {
-        Ok(vec![prost::Message::decode(&res[..])?])
+        let decoded = prost::Message::decode(&res[..])?;
+        info!("get_eq {}", model);
+        Ok(vec![decoded])
     } else {
+        info!("get_eq {}", model);
         Ok(vec![])
     }
 }
 
-pub fn get_gte<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_gte<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
@@ -135,10 +143,13 @@ where
         Direction::Forward,
     ));
 
-    Ok(handle_get_itr(model, &mut itr))
+    let res = handle_get_itr(model, &mut itr);
+    info!("get_gte {}", model);
+
+    Ok(res)
 }
 
-pub fn get_lte<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_lte<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
@@ -147,10 +158,13 @@ where
         Direction::Reverse,
     ));
 
-    Ok(handle_get_itr(model, &mut itr))
+    let res = handle_get_itr(model, &mut itr);
+    info!("get_lte {}", model);
+
+    Ok(res)
 }
 
-pub fn get_begins_with<T>(model: &'static str, val: String) -> Result<Vec<T>, Box<dyn Error>>
+pub fn get_begins_with<T>(model: &'static str, val: &str) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
@@ -165,6 +179,9 @@ where
             if key.starts_with(&val) {
                 if let Ok(item) = prost::Message::decode(&*v) {
                     items.push(item);
+                } else {
+                    error!("failed to decode record");
+                    break;
                 }
             } else {
                 break;
@@ -172,35 +189,42 @@ where
         }
     }
 
+    info!("get_begins_with {}", model);
+
     Ok(items)
 }
 
 // DELETE
 
-pub fn delete_eq(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_eq(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     ROCKSDB.delete(format!("{}#{}", model, val).as_bytes())?;
+    info!("delete_eq {}", model);
     Ok(())
 }
 
-pub fn delete_gte(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_gte(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     let mut itr = ROCKSDB.iterator(IteratorMode::From(
         format!("{}#{}", model, val).as_bytes(),
         Direction::Forward,
     ));
 
-    handle_delete_itr(model, &mut itr)
+    handle_delete_itr(model, &mut itr)?;
+    info!("delete_gte {}", model);
+    Ok(())
 }
 
-pub fn delete_lte(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_lte(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     let mut itr = ROCKSDB.iterator(IteratorMode::From(
         format!("{}#{}", model, val).as_bytes(),
         Direction::Reverse,
     ));
 
-    handle_delete_itr(model, &mut itr)
+    handle_delete_itr(model, &mut itr)?;
+    info!("delete_lte {}", model);
+    Ok(())
 }
 
-pub fn delete_begins_with(model: &'static str, val: String) -> Result<(), Box<dyn Error>> {
+pub fn delete_begins_with(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     let val = format!("{}#{}", model, val);
 
     let mut itr = ROCKSDB.iterator(IteratorMode::From(val.as_bytes(), Direction::Forward));
@@ -218,5 +242,6 @@ pub fn delete_begins_with(model: &'static str, val: String) -> Result<(), Box<dy
     }
 
     ROCKSDB.write(batch)?;
+    info!("delete_begins_with {}", model);
     Ok(())
 }
