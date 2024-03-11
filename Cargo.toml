@@ -74,7 +74,7 @@ homepage = "https://ordinarylabs.io"
 repository = "https://github.com/ordinarylabs/bicycle"
 license = "AGPL-3.0-only"
 categories = ["database"]
-version = "0.2.0-alpha.2"
+version = "0.2.0-alpha.3"
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
@@ -95,9 +95,9 @@ tokio-stream = "0.1.14"
 tokio = { version = "1.36.0", features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
 
 ##START_WORKSPACE_ENGINE##
-engine = { package = "bicycle_sqlite", path = "./engines/sqlite", version = "0.2.0-alpha.2" }
+engine = { package = "bicycle_sqlite", path = "./engines/sqlite", version = "0.2.0-alpha.3" }
 ##END_WORKSPACE_ENGINE##
 
-bicycle_proto = { path = "./proto", version = "0.2.0-alpha.2" }
-bicycle_core = { path = "./core", version = "0.2.0-alpha.2" }
-bicycle_server = { path = "./server", version = "0.2.0-alpha.2" }
+bicycle_proto = { path = "./proto", version = "0.2.0-alpha.3" }
+bicycle_core = { path = "./core", version = "0.2.0-alpha.3" }
+bicycle_server = { path = "./server", version = "0.2.0-alpha.3" }
