@@ -60,24 +60,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .arg_required_else_help(true)
                         .about("deploys a stored procedure.")
                         .arg(
-                            arg!(<LIB_PATH> "relative path to the lib directory.")
-                                .value_parser(value_parser!(String)).required(true),
-                        )
-                        .arg(
                             arg!(--"addr" <ADDRESS> "address of the database (i.e http://0.0.0.0::50051)")
-                                .value_parser(value_parser!(String)).required(true),
-                        )
-                        .arg(
-                            arg!(--"name" <NAME> "name for the stored procedure.")
                                 .value_parser(value_parser!(String)).required(true),
                         )
                         .arg(
                             arg!(--"lang" <LANGUAGE> "language to be compiled to WebAssembly.")
                                 .value_parser(["rust"]).required(true),
                         )
+                        .arg(
+                            arg!(--"path" <PATH> "relative path to the lib directory.")
+                                .value_parser(value_parser!(String)).required(true),
+                        )
+                        .arg(
+                            arg!(--"name" <NAME> "name for the stored procedure.")
+                                .value_parser(value_parser!(String)).required(true),
+                        )
                 )
                 .subcommand(
-                    command!("exec")
+                    command!("invoke")
                         .arg_required_else_help(true)
                         .about("runs a stored procedure.")
                         .arg_required_else_help(true)
@@ -87,32 +87,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         )
                         .arg(
                             arg!(--"name" <NAME> "name of stored procedure.")
-                                .value_parser(value_parser!(String)).required(true),
-                        )
-                        .arg(
-                            arg!(--"args" <ARGUMENTS> "arguments to be parsed into the protobuf Value WKT\nformatted as JSON")
-                                .value_parser(value_parser!(String)),
-                        )
-                )
-                .subcommand(
-                    command!("oneoff")
-                        .arg_required_else_help(true)
-                        .about("sends up a one-off procedure.")
-                        .arg(
-                            arg!(<LIB_PATH> "relative path to the lib directory.")
-                                .value_parser(value_parser!(String)).required(true),
-                        )
-                        .arg(
-                            arg!(--"addr" <ADDRESS> "address of the database (i.e http://0.0.0.0::50051)")
-                                .value_parser(value_parser!(String)).required(true),
+                                .value_parser(value_parser!(String)).required_unless_present("path"),
                         )
                         .arg(
                             arg!(--"lang" <LANGUAGE> "language to be compiled to WebAssembly")
-                                .value_parser(["rust"]).required(true),
+                                .value_parser(["rust"]).required_unless_present("name"),
                         )
-                        .arg_required_else_help(true)
                         .arg(
-                            arg!(--"args" <ARGUMENTS> "arguments to be parsed into the protobuf Value WKT")
+                            arg!(--"path" <PATH> "relative path to the proc lib directory.")
+                                .value_parser(value_parser!(String)).required_unless_present("name"),
+                        )
+                        .arg(
+                            arg!(--"args" <ARGUMENTS> "arguments to be parsed into the protobuf Value WKT\nformatted as JSON")
                                 .value_parser(value_parser!(String)),
                         )
                 )
@@ -145,24 +131,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some(("sproc", matches)) => match matches.subcommand() {
             Some(("deploy", matches)) => {
-                let lib_path = matches.get_one::<String>("LIB_PATH").expect("required");
-
-                let name = matches
-                    .get_one::<String>("name")
+                let addr = matches
+                    .get_one::<String>("addr")
                     .expect("required")
                     .to_string();
                 let lang = matches
                     .get_one::<String>("lang")
                     .expect("required")
                     .to_string();
-                let addr = matches
-                    .get_one::<String>("addr")
+                let path = matches
+                    .get_one::<String>("path")
+                    .expect("required")
+                    .to_string();
+                let name = matches
+                    .get_one::<String>("name")
                     .expect("required")
                     .to_string();
 
                 match lang.as_str() {
                     "rust" => {
-                        std::env::set_current_dir(lib_path)?;
+                        // TODO: zip the lib and include it in the deploy payload
+
+                        std::env::set_current_dir(path)?;
 
                         println!("🦀 targeting WebAssembly...");
                         process::Command::new("cargo")
@@ -188,11 +178,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     _ => unreachable!(),
                 }
             }
-            Some(("exec", matches)) => {
-                let name = matches
-                    .get_one::<String>("name")
-                    .expect("required")
-                    .to_string();
+            Some(("invoke", matches)) => {
                 let addr = matches
                     .get_one::<String>("addr")
                     .expect("required")
@@ -209,80 +195,62 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     None => prost_types::Value { kind: None },
                 };
 
-                println!("🚀 executing procedure...");
                 let mut client = SprocClient::connect(addr).await?;
 
-                let request = tonic::Request::new(Stored {
-                    name: name.to_string(),
-                    args: Some(args),
-                });
+                let response = if let Some(name) = matches.get_one::<String>("name") {
+                    let name = name.to_string();
 
-                let now = std::time::Instant::now();
-                let response = client.exec_stored(request).await?;
-                println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
+                    let request = tonic::Request::new(Stored {
+                        name: name.to_string(),
+                        args: Some(args),
+                    });
+
+                    println!("🚀 executing procedure...");
+                    let now = std::time::Instant::now();
+                    let response = client.exec_stored(request).await?;
+                    println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
+                    response
+                } else {
+                    let path = matches
+                        .get_one::<String>("path")
+                        .expect("required if not name")
+                        .to_string();
+
+                    // TODO: use when other languages are supported
+                    let _lang = matches
+                        .get_one::<String>("lang")
+                        .expect("required if not name")
+                        .to_string();
+
+                    std::env::set_current_dir(path)?;
+
+                    println!("🦀 targeting WebAssembly...");
+                    process::Command::new("cargo")
+                        .args(["wasi", "build", "--release"])
+                        .output()?;
+
+                    let proc_bytes = fs::read("target/wasm32-wasi/release/proc.wasm")?;
+
+                    println!("🕸️  compiled to WebAssembly.");
+
+                    let request = tonic::Request::new(OneOff {
+                        proc: proc_bytes,
+                        args: Some(args),
+                    });
+
+                    println!("🚀 executing procedure...");
+                    let now = std::time::Instant::now();
+                    let response = client.exec_one_off(request).await?;
+                    println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
+
+                    response
+                };
 
                 let response_as_json = proto_to_json(response.into_inner());
                 println!(
                     "\nresponse:\n\n{}",
                     serde_json::to_string_pretty(&response_as_json).unwrap()
                 );
-            }
-            Some(("oneoff", matches)) => {
-                let lib_path = matches.get_one::<String>("LIB_PATH").expect("required");
-
-                let lang = matches
-                    .get_one::<String>("lang")
-                    .expect("required")
-                    .to_string();
-                let addr = matches
-                    .get_one::<String>("addr")
-                    .expect("required")
-                    .to_string();
-
-                let args = match matches.get_one::<String>("args") {
-                    Some(args) => {
-                        println!("📦 encoding proc args...");
-                        let json_value = serde_json::from_str(args)?;
-                        println!("📦 proc args encoded.");
-
-                        json_to_proto(json_value)
-                    }
-                    None => prost_types::Value { kind: None },
-                };
-
-                match lang.as_str() {
-                    "rust" => {
-                        std::env::set_current_dir(lib_path)?;
-
-                        println!("🦀 targeting WebAssembly...");
-                        process::Command::new("cargo")
-                            .args(["wasi", "build", "--release"])
-                            .output()?;
-
-                        let proc_bytes = fs::read("target/wasm32-wasi/release/proc.wasm")?;
-
-                        println!("🕸️  compiled to WebAssembly.");
-
-                        println!("🚀 executing procedure...");
-                        let mut client = SprocClient::connect(addr).await?;
-
-                        let request = tonic::Request::new(OneOff {
-                            proc: proc_bytes,
-                            args: Some(args),
-                        });
-
-                        let now = std::time::Instant::now();
-                        let response = client.exec_one_off(request).await?;
-                        println!("✅ done!\n⏱️  round trip in {}ms", now.elapsed().as_millis());
-
-                        let response_as_json = proto_to_json(response.into_inner());
-                        println!(
-                            "\nresponse:\n\n{}",
-                            serde_json::to_string_pretty(&response_as_json).unwrap()
-                        );
-                    }
-                    _ => unreachable!(),
-                }
             }
             _ => unreachable!(),
         },

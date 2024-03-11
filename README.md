@@ -293,30 +293,32 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-### Execution
+### Invoking
 
 To test the procedure as a one-off against your Bicycle server
 
 ```bash
-bicycle sproc oneoff ./dog-names-proc \
+bicycle sproc invoke \
   --addr http://0.0.0.0:50051 \
   --lang rust \
+  --path ./dog-names-proc \
   --args '{"begins_with": ""}'
 ```
 
 To store the procedure on your Bicycle server for future execution
 
 ```bash
-bicycle sproc deploy ./dog-names-proc \
+bicycle sproc deploy \
   --addr http://0.0.0.0:50051 \
   --lang rust \
+  --path ./dog-names-proc \
   --name dog-names-proc
 ```
 
 To execute a previously stored procedure on your Bicycle server
 
 ```bash
-bicycle sproc exec \
+bicycle sproc invoke \
   --addr http://0.0.0.0:50051 \
   --name dog-names-proc \
   --args '{"begins_with": ""}'

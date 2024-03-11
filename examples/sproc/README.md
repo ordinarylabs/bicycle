@@ -1,9 +1,21 @@
-# Tests for the Bicycle Framework
+# SPROC Example
 
-## SPROC
+With `./server` running you can test with the following commands.
 
-With `./server` running you can test using the following command.
+## Invoke One-off
 
 ```
-cargo run -- sproc oneoff ./examples/sproc --lang rust --addr http://0.0.0.0:50051
+cargo run -- sproc invoke --addr http://0.0.0.0:50051 --lang rust --path ./examples/sproc --args '{"begins_with": ""}'
+```
+
+## Deploy Procedure
+
+```
+cargo run -- sproc deploy --addr http://0.0.0.0:50051 --lang rust --path ./examples/sproc --name test  
+```
+
+## Invoke Deployed Procedure
+
+```
+cargo run -- sproc invoke --addr http://0.0.0.0:50051 --name test --args '{"begins_with": ""}'  
 ```
