@@ -277,19 +277,28 @@ fn main() -> Result<(), Box<dyn Error>> {
 To test the procedure as a one-off against your Bicycle server
 
 ```bash
-bicycle sproc oneoff ./dog-names-proc --addr http://0.0.0.0:50051 --lang rust --args '{"begins_with": ""}'
+bicycle sproc oneoff ./dog-names-proc \
+  --addr http://0.0.0.0:50051 \
+  --lang rust \
+  --args '{"begins_with": ""}'
 ```
 
 To store the procedure on your Bicycle server for future execution
 
 ```bash
-bicycle sproc deploy ./dog-names-proc --addr http://0.0.0.0:50051 --name dog-names-proc --lang rust
+bicycle sproc deploy ./dog-names-proc \
+  --addr http://0.0.0.0:50051 \
+  --lang rust \
+  --name dog-names-proc
 ```
 
 To execute a previously stored procedure on your Bicycle server
 
 ```bash
-bicycle sproc exec --addr http://0.0.0.0:50051 --name dog-names-proc --args '{"begins_with": ""}'
+bicycle sproc exec \
+  --addr http://0.0.0.0:50051 \
+  --name dog-names-proc \
+  --args '{"begins_with": ""}'
 ```
 
 ## Embedding

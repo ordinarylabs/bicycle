@@ -78,6 +78,7 @@ fn main() -> std::io::Result<()> {
         create_dir(tmp_engines_path)?;
     }
 
+    // RocksDB
     let tmp_engines_rocksdb_path = tmp_path.join("engines/rocksdb");
 
     if !tmp_engines_rocksdb_path.exists() {
@@ -98,6 +99,29 @@ fn main() -> std::io::Result<()> {
     copy(
         manifest_path.join("engines/rocksdb/src/lib.rs"),
         tmp_path.join("engines/rocksdb/src/lib.rs"),
+    )?;
+
+    // SQLite
+    let tmp_engines_sqlite_path = tmp_path.join("engines/sqlite");
+
+    if !tmp_engines_sqlite_path.exists() {
+        create_dir(tmp_engines_sqlite_path)?;
+    }
+
+    copy(
+        manifest_path.join("engines/sqlite/Cargo.toml"),
+        tmp_path.join("engines/sqlite/Freight.toml"),
+    )?;
+
+    let tmp_engines_sqlite_src_path = tmp_path.join("engines/sqlite/src");
+
+    if !tmp_engines_sqlite_src_path.exists() {
+        create_dir(tmp_engines_sqlite_src_path)?;
+    }
+
+    copy(
+        manifest_path.join("engines/sqlite/src/lib.rs"),
+        tmp_path.join("engines/sqlite/src/lib.rs"),
     )?;
 
     // PROTO

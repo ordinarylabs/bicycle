@@ -16,27 +16,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "bicycle_sproc"
+name = "bicycle_sqlite"
 version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "WebAssembly SPROC runtime for the Bicycle framework"
+description = "SQLite database engine for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
-categories = []
+categories = ["database"]
 
 [dependencies]
-bicycle_core = { workspace = true }
+rocksdb = "0.21.0"
 
-tonic = { workspace = true } 
-tonic-reflection = { workspace = true }
+r2d2 = "0.8.10"
+r2d2_sqlite = { version = "0.24.0", features = ["bundled"] }
 
+lazy_static = { workspace = true }
 prost = { workspace = true }
-prost-types = { workspace = true }
-
-tokio-stream = { workspace = true }
-tokio = { workspace = true }
-
-[build-dependencies]
-tonic-build = { workspace = true }

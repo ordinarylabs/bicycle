@@ -20,18 +20,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #[macro_use]
 extern crate lazy_static;
 
-use std::{error::Error, str::from_utf8};
+use std::error::Error;
+use std::str::from_utf8;
 
 use rocksdb::{
     DBAccess, DBIteratorWithThreadMode, Direction, IteratorMode, Options, WriteBatch, DB,
 };
 
 lazy_static! {
-    pub(crate) static ref ROCKSDB: DB = {
+    static ref ROCKSDB: DB = {
         let mut opts = Options::default();
         opts.create_if_missing(true);
 
-        DB::open(&opts, "__bicycle.engine.rocksdb__").unwrap()
+        DB::open(&opts, "__bicycle.engine.rocksdb__").expect("unable to open RocksDB")
     };
 }
 

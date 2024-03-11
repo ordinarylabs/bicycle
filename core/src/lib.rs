@@ -226,7 +226,7 @@ pub fn exec(
     // ##END_HOST_FNS##
 
     // TODO: modules may need to be built once and stored.
-    // TODO: initialization takes ~30ms.
+    // TODO: module instantiation is 99% of the work done.
     // TODO: will require a change to how `recv_in()` is
     // TODO: managed.
     let module = Module::new(&engine, src)?;

@@ -61,6 +61,7 @@ bicycle_sproc = { workspace = true }
 members = [
     "core", 
     "engines/rocksdb",
+    "engines/sqlite",
     "proto",
     "shims",
     "server", 
@@ -91,9 +92,11 @@ tonic-reflection = "0.10.2"
 rocksdb = "0.21.0"
 
 tokio-stream = "0.1.14"
-tokio = "1.36.0"
+tokio = { version = "1.36.0", features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
 
-engine = { package = "bicycle_rocksdb", path = "./engines/rocksdb", version = "0.2.0-alpha.1" }
+##START_WORKSPACE_ENGINE##
+engine = { package = "bicycle_sqlite", path = "./engines/sqlite", version = "0.2.0-alpha.1" }
+##END_WORKSPACE_ENGINE##
 
 bicycle_proto = { path = "./proto", version = "0.2.0-alpha.1" }
 bicycle_core = { path = "./core", version = "0.2.0-alpha.1" }

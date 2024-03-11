@@ -48,6 +48,7 @@ const CORE_SRC_LIB_RS: &'static str = include_str!(concat!(
 
 // ENGINES
 
+// RocksDB
 const ENGINES_ROCKSDB_CARGO_TOML: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/engines/rocksdb/Freight.toml"
@@ -55,6 +56,16 @@ const ENGINES_ROCKSDB_CARGO_TOML: &'static str = include_str!(concat!(
 const ENGINES_ROCKSDB_SRC_LIB_RS: &'static str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/cli/tmp/engines/rocksdb/src/lib.rs"
+));
+
+// SQLite
+const ENGINES_SQLITE_CARGO_TOML: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/engines/sqlite/Freight.toml"
+));
+const ENGINES_SQLITE_SRC_LIB_RS: &'static str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/cli/tmp/engines/sqlite/src/lib.rs"
 ));
 
 // PROTO
@@ -145,6 +156,11 @@ fn get_between(content: &str, from: &str, to: Option<&str>) -> String {
 }
 
 lazy_static! {
+    static ref WORKSPACE_ENGINE: String = get_between(
+        WORKSPACE_CARGO_TOML,
+        "##START_WORKSPACE_ENGINE##",
+        Some("##END_WORKSPACE_ENGINE##"),
+    );
     static ref PROTO_MODEL_MESSAGES: String = get_between(
         PROTO_BICYCLE_PROTO,
         "##MODEL_MESSAGES_START##",
@@ -185,9 +201,13 @@ fn write_file(path: &str, content: &str) -> Result<(), Box<dyn std::error::Error
     Ok(())
 }
 
-pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn gen(models: Vec<Model>, engine: &str) -> Result<(), Box<dyn std::error::Error>> {
     // BASE
-    write_file("Cargo.toml", WORKSPACE_CARGO_TOML)?;
+    let workspace_engine = WORKSPACE_ENGINE.replace("sqlite", engine);
+    write_file(
+        "Cargo.toml",
+        &WORKSPACE_CARGO_TOML.replace(&WORKSPACE_ENGINE.to_string(), &workspace_engine),
+    )?;
 
     // CORE
     create_dir("core")?;
@@ -198,11 +218,20 @@ pub(crate) fn gen(models: Vec<Model>, _engine: &str) -> Result<(), Box<dyn std::
 
     // ENGINES
     create_dir("engines")?;
+
+    // RocksDB
     create_dir("engines/rocksdb")?;
     write_file("engines/rocksdb/Cargo.toml", ENGINES_ROCKSDB_CARGO_TOML)?;
 
     create_dir("engines/rocksdb/src")?;
     write_file("engines/rocksdb/src/lib.rs", ENGINES_ROCKSDB_SRC_LIB_RS)?;
+
+    // SQLite
+    create_dir("engines/sqlite")?;
+    write_file("engines/sqlite/Cargo.toml", ENGINES_SQLITE_CARGO_TOML)?;
+
+    create_dir("engines/sqlite/src")?;
+    write_file("engines/sqlite/src/lib.rs", ENGINES_SQLITE_SRC_LIB_RS)?;
 
     // PROTO
 

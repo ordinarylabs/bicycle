@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 )
                 .arg(
                     arg!(--"engine" <ENGINE> "specifies database engine.")
-                        .value_parser(["rocksdb"])
+                        .value_parser(["rocksdb", "sqlite"])
                         .default_value("rocksdb"),
                 ),
         )
@@ -97,11 +97,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         )
                         .arg(
                             arg!(--"addr" <ADDRESS> "address of the database (i.e http://0.0.0.0::50051)")
-                                .value_parser(value_parser!(String)),
+                                .value_parser(value_parser!(String)).required(true),
                         )
                         .arg(
                             arg!(--"lang" <LANGUAGE> "language to be compiled to WebAssembly")
-                                .value_parser(["rust"]),
+                                .value_parser(["rust"]).required(true),
                         )
                         .arg_required_else_help(true)
                         .arg(
