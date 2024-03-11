@@ -16,7 +16,9 @@ Before installing `bicycle` you'll need to have [Rust](https://www.rust-lang.org
 cargo install bicycle
 ```
 
-## CLI
+## Usage
+
+### Schema
 
 A Bicycle schema is defined in a simple `.proto` file.
 
@@ -34,13 +36,17 @@ message Dog {
 }
 ```
 
+### CLI
+
 Now that you have your schema, you can run the `build` command to generate your Bicycle components.
 
 ```bash
 bicycle build schema.proto
 ```
 
-The default engine is RocksDB but `rocksdblib-sys` takes quite awhile for the initial build (subsequent builds should be quicker). If you'd like faster builds you can also use the SQLite engine using the `--engine` flag.
+### Engines
+
+The default engine is RocksDB but `rocksdblib-sys` takes quite awhile for the initial build (subsequent builds should be quicker). If you'd like a faster initial build or would prefer SQLite for other reasons you can also use the SQLite engine by supplying the `--engine` flag.
 
 ```bash
 bicycle build schema.proto --engine sqlite
@@ -145,47 +151,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 ### Other Languages
 
-You can also use the ` ./__bicycle__/proto/bicycle.proto` to codegen your own database clients for any other language. Because the Bicycle server is just a gRPC server, any language with gRPC support also has Bicycle client support. 
-
-```protobuf
-//  ./__bicycle__/proto/bicycle.proto
-syntax = "proto3";
-package bicycle;
-
-message Dogs { 
-  repeated Dog dogs = 1; 
-}
-message Dog {
-  string pk = 1;
-  string name = 2;
-  uint32 age = 3;
-  string breed = 4;
-}
-
-message IndexQuery {
-  oneof expression {
-    string eq = 1;
-    string gte = 2;
-    string lte = 3;
-    string begins_with = 4;
-  }
-}
-
-message Empty {}
-
-service Bicycle {
-  rpc GetDogsByPk(IndexQuery) returns (Dogs) {}
-  rpc DeleteDogsByPk(IndexQuery) returns (Empty) {}
-  rpc PutDog(Dog) returns (Empty) {}
-  rpc BatchPutDogs(Dogs) returns (Empty) {}
-}
-```
+You can also use the ` ./__bicycle__/proto/bicycle.proto` to codegen your own database clients for any other language. Because the Bicycle server is just a gRPC server, any language with gRPC support also has Bicycle client support.
 
 ### Desktop GUIs
 
 Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0::50051`, and they should be able to automatically load up all your RPCs.
 
 ## Embedding
+
+### Rust
 
 In addition to the gRPC server based implementation, you can also use the generated Rust `core` functions without using gRPC at all. The query/storage formats remain protobuf, but without the remote server interaction.
 
@@ -222,15 +196,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 ```
 
+### Other Languages
+
+Currently no other languages are officially supported for embedding, but it is the intention to add support via FFIs at some point in the future. Because it will mostly be passing encoded protobuf messages through as bytes it should be fairly straightforward to implement bindings for other languages with protobuf support.
+
 ## SPROCS
 
 Stored procedures are supported and can be written in Rust built for the `wasm32-wasi` target. Currently only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
 
-`bicycle sproc` commands for building with `--lang rust` depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
+`bicycle sproc` commands for compiling with `--lang rust` depend on `cargo-wasi` which can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
 
 ### Definition
 
-For this example we want to create a stored procedure that will return us only the `Dog`'s names. To create a new SPROC we run the following
+For this example we want to create a stored procedure that will return only the `Dog`'s names. To create a new SPROC we run the following
 
 ```bash
 cargo new dog-names-proc
