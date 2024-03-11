@@ -17,14 +17,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use clap::{arg, command, value_parser, Command};
+use clap::{arg, command, value_parser};
+
 use std::env;
+use std::fs;
+use std::process;
 
 use bicycle_sproc::proto::{sproc_client::SprocClient, OneOff, Proc, Stored};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cmd = Command::new("bicycle")
+    let cmd = clap::Command::new("bicycle")
         .bin_name("bicycle")
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)
@@ -42,6 +45,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .value_parser(["rocksdb", "sqlite"])
                         .default_value("rocksdb"),
                 ),
+        )
+        .subcommand(
+            command!("start")
+                .about("starts server in the generated __bicycle__ directory.")
         )
         .subcommand(
             command!("sproc")
@@ -123,6 +130,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             bicycle::build(schema_path, engine)?;
         }
+        Some(("start", _)) => {
+            env::set_current_dir("./__bicycle__")?;
+
+            let mut child = process::Command::new("./target/release/bicycle_server")
+                .stdout(process::Stdio::piped())
+                .spawn()?;
+
+            if let Some(mut child_out) = child.stdout.take() {
+                std::io::copy(&mut child_out, &mut std::io::stdout())?;
+            };
+
+            child.wait()?;
+        }
         Some(("sproc", matches)) => match matches.subcommand() {
             Some(("deploy", matches)) => {
                 let lib_path = matches.get_one::<String>("LIB_PATH").expect("required");
@@ -145,11 +165,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         std::env::set_current_dir(lib_path)?;
 
                         println!("🦀 targeting WebAssembly...");
-                        std::process::Command::new("cargo")
+                        process::Command::new("cargo")
                             .args(["wasi", "build", "--release"])
                             .output()?;
 
-                        let proc_bytes = std::fs::read("target/wasm32-wasi/release/proc.wasm")?;
+                        let proc_bytes = fs::read("target/wasm32-wasi/release/proc.wasm")?;
 
                         println!("🕸️  compiled to WebAssembly.");
 
@@ -235,11 +255,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         std::env::set_current_dir(lib_path)?;
 
                         println!("🦀 targeting WebAssembly...");
-                        std::process::Command::new("cargo")
+                        process::Command::new("cargo")
                             .args(["wasi", "build", "--release"])
                             .output()?;
 
-                        let proc_bytes = std::fs::read("target/wasm32-wasi/release/proc.wasm")?;
+                        let proc_bytes = fs::read("target/wasm32-wasi/release/proc.wasm")?;
 
                         println!("🕸️  compiled to WebAssembly.");
 

@@ -120,7 +120,9 @@ fn main() {
 
     println!("✅ done!");
 
-    println!("\n🚀 start server: ./__bicycle__/target/release/bicycle_server\n🚲 client codegen: ./__bicycle__/proto/bicycle.proto");
+    println!(
+        "\n🚀 start server with `bicycle start`\n🚲 codegen with ./__bicycle__/proto/bicycle.proto"
+    );
 
     Ok(())
 }

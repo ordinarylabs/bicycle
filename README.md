@@ -16,7 +16,7 @@ Before installing `bicycle` you'll need to have [Rust](https://www.rust-lang.org
 cargo install bicycle
 ```
 
-## Usage
+## CLI
 
 A Bicycle schema is defined in a simple `.proto` file.
 
@@ -34,20 +34,26 @@ message Dog {
 }
 ```
 
-Run the `build` command to generate your Bicycle components.
+Now that you have your schema, you can run the `build` command to generate your Bicycle components.
 
 ```bash
 bicycle build schema.proto
 ```
 
-## Server
-
-### Running
-
-You can now run the server binary with the following command.
+The default engine is RocksDB but `rocksdblib-sys` takes quite awhile for the initial build (subsequent builds should be quicker). If you'd like faster builds you can also use the SQLite engine using the `--engine` flag.
 
 ```bash
-./__bicycle__/target/release/bicycle_server
+bicycle build schema.proto --engine sqlite
+```
+
+## Server
+
+### Start
+
+You can now start the server with the following command.
+
+```bash
+bicycle start
 ```
 
 ### Testing RPCs
@@ -179,6 +185,43 @@ service Bicycle {
 
 Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0::50051`, and they should be able to automatically load up all your RPCs.
 
+## Embedding
+
+In addition to the gRPC server based implementation, you can also use the generated Rust `core` functions without using gRPC at all. The query/storage formats remain protobuf, but without the remote server interaction.
+
+You can import the core functionality into your project by adding the generated `bicycle_core` as a dependency in your `Cargo.toml`
+
+```toml
+# embedded-dogs/Cargo.toml
+[dependencies]
+bicycle = { package = "bicycle_core", path = "__bicycle__/core" }
+```
+
+```rust
+// embedded-dogs/src/main.rs
+use bicycle;
+use bicycle::proto::{index_query::Expression, Dog, IndexQuery};
+
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    // write a dog to local Bicycle
+    bicycle::put_dog(Dog {
+        pk: "0".to_string(),
+        name: "Ollie".to_string(),
+        age: 7,
+        breed: "Pitty".to_string(),
+    })?;
+
+    // get that dog back from local Bicycle
+    let dogs = bicycle::get_dogs_by_pk(IndexQuery {
+        expression: Some(Expression::Eq("0".to_string())),
+    })?;
+
+    Ok(())
+}
+```
+
 ## SPROCS
 
 Stored procedures are supported and can be written in Rust built for the `wasm32-wasi` target. Currently only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
@@ -301,42 +344,11 @@ bicycle sproc exec \
   --args '{"begins_with": ""}'
 ```
 
-## Embedding
+### Caveats
 
-In addition to the gRPC server based implementation, you can also use the generated Rust `core` functions without using gRPC at all. The query/storage formats remain protobuf, but without the remote server interaction.
+SPROCS are not yet transactional, so any error that causes the procedure to terminate prematurely can result in partial writes. It is the intention to make SPROCS transactional at some later date.
 
-You can import the core functionality into your project by adding the generated `bicycle_core` as a dependency in your `Cargo.toml`
-
-```toml
-# embedded-dogs/Cargo.toml
-[dependencies]
-bicycle = { package = "bicycle_core", path = "__bicycle__/core" }
-```
-
-```rust
-// embedded-dogs/src/main.rs
-use bicycle;
-use bicycle::proto::{index_query::Expression, Dog, IndexQuery};
-
-use std::error::Error;
-
-fn main() -> Result<(), Box<dyn Error>> {
-    // write a dog to local Bicycle
-    bicycle::put_dog(Dog {
-        pk: "0".to_string(),
-        name: "Ollie".to_string(),
-        age: 7,
-        breed: "Pitty".to_string(),
-    })?;
-
-    // get that dog back from local Bicycle
-    let dogs = bicycle::get_dogs_by_pk(IndexQuery {
-        expression: Some(Expression::Eq("0".to_string())),
-    })?;
-
-    Ok(())
-}
-```
+Currently all SPROC invocations freshly compile the WebAssembly binary using the [wasmtime](https://docs.rs/wasmtime/latest/wasmtime/) `Module::new()` function which compiles the binary on the fly; this operation makes up the majority of the overhead used by the SPROC invocation and can add 10s of milliseconds depending on the environment. This will be optimized away in the future by caching the modules.
 
 ## License
 
