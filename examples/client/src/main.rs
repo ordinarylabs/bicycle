@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use bicycle_core;
 use bicycle_core::proto::{
-    bicycle_client::BicycleClient, index_query::Expression, Example, IndexQuery,
+    bicycle_client::BicycleClient, index_query::Expression, Dog, IndexQuery,
 };
 use bicycle_core::tonic::Request;
 
@@ -27,21 +27,27 @@ use std::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // establish connection to remote Bicycle server
     let mut client = BicycleClient::connect("http://0.0.0.0:50051").await?;
 
+    // write a dog to remote Bicycle server
     client
-        .put_example(Request::new(Example {
-            pk: "SOME_STR".to_string(),
+        .put_dog(Request::new(Dog {
+            pk: "4".to_string(),
+            name: "Sam".to_string(),
+            age: 6,
+            breed: "Labrador".to_string(),
         }))
         .await?;
 
-    let examples = client
-        .get_examples_by_pk(Request::new(IndexQuery {
-            expression: Some(Expression::Eq("SOME_STR".to_string())),
+    // get dog back from remote Bicycle server
+    let dogs = client
+        .get_dogs_by_pk(Request::new(IndexQuery {
+            expression: Some(Expression::Eq("4".to_string())),
         }))
         .await?;
 
-    println!("{:#?}", examples);
+    println!("{:?}", dogs.into_inner());
 
     Ok(())
 }

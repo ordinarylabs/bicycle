@@ -23,5 +23,8 @@ authors = ["sean watters <sean@ordinarylabs.io>"]
 license = "AGPL-3.0-only"
 
 [dependencies]
-bicycle_core = { path = "../../core" }
 tokio = { version = "1.36.0", features = ["rt", "macros", "rt-multi-thread"] }
+bicycle_core = { path = "__bicycle__/core" }
+
+[build-dependencies]
+bicycle = { path = "../.." }

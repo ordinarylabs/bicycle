@@ -191,15 +191,9 @@ pub(crate) fn gen(models: Vec<Model>, engine: &str) -> Result<(), Box<dyn std::e
         .parse::<toml::Table>()
         .unwrap();
 
-    if let Some(members) = workspace_toml["workspace"]["members"].as_array() {
-        for member in members {
-            let member = member.to_string();
-
-            if member.contains("\"examples/") {
-                sanitized_workspace_cargo_toml =
-                    sanitized_workspace_cargo_toml.replace(&format!("{},", member), "");
-            }
-        }
+    if let Some(version) = workspace_toml["workspace"]["package"]["version"].as_str() {
+        sanitized_workspace_cargo_toml = sanitized_workspace_cargo_toml
+            .replace(&format!("version = \"{}\"", version), "version = \"0.0.0\"");
     }
 
     let workspace_engine = WORKSPACE_ENGINE.replace("sqlite", engine);

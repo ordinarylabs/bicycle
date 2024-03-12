@@ -62,11 +62,14 @@ members = [
     "core", 
     "engines/rocksdb",
     "engines/sqlite",
-    "examples/client",
-    "examples/embed",
     "proto",
     "shims",
     "server",
+]
+exclude = [
+    "examples/client",
+    "examples/embed",
+    "examples/sproc"
 ]
 
 [workspace.package]
@@ -76,6 +79,8 @@ homepage = "https://ordinarylabs.io"
 repository = "https://github.com/ordinarylabs/bicycle"
 license = "AGPL-3.0-only"
 categories = ["database"]
+## !! version can't ever collide with other versions
+## !! formatted as `version = "x.x.x"` in this file
 version = "0.2.0"
 
 [workspace.dependencies]

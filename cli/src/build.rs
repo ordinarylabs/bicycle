@@ -30,8 +30,7 @@ use prost_types::FileDescriptorSet;
 use crate::utils::construct_model;
 use crate::{gen, utils::Model, PRECOMPILE_DIR};
 
-/// builds a Bicycle database server binary and client proto file.
-/// outputs to `out/` directory.
+/// builds Bicycle components.
 ///
 /// * `schema_path` - path to the schema.proto file
 /// * `engine` - the database engine used
@@ -47,7 +46,7 @@ pub fn build(schema_path: &str, engine: &str) -> Result<(), Box<dyn std::error::
 
     tonic_build::configure()
         .file_descriptor_set_path(&tmp_desc_path)
-        .compile(&[&schema_path], &["."])
+        .compile(&[&schema_path], &[schema_path.replace("schema.proto", "")])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 
     let descriptor_bytes = fs::read(&tmp_desc_path)?;
