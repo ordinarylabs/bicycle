@@ -153,9 +153,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 You can also use the ` ./__bicycle__/proto/bicycle.proto` to codegen your own database clients for any other language. Because the Bicycle server is just a gRPC server, any language with gRPC support also has Bicycle client support.
 
-### Desktop GUIs
+### GUI
 
-Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0:50051`, and they should be able to automatically load up all your RPCs.
+Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (list of options [here](https://github.com/grpc-ecosystem/awesome-grpc?tab=readme-ov-file#gui)), type in `0.0.0.0:50051`, and it should be able to automatically load up all your RPCs.
 
 ## Embedding
 
