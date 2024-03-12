@@ -46,7 +46,7 @@ bicycle build schema.proto
 
 ### Engines
 
-Bicycle's default storage engine is RocksDB but `rocksdblib-sys` takes quite awhile for the initial build (subsequent builds should be quicker as you iterate on your schema). If you'd like a faster initial build or would prefer SQLite for other reasons you can also use the SQLite engine by supplying the `--engine` flag.
+Bicycle's default storage engine is RocksDB but `librocksdb-sys` takes quite awhile for the initial build (subsequent builds should be quicker as you iterate on your schema). If you'd like a faster initial build or would prefer SQLite for other reasons you can also use the SQLite engine by supplying the `--engine` flag.
 
 ```bash
 bicycle build schema.proto --engine sqlite
@@ -155,7 +155,7 @@ You can also use the ` ./__bicycle__/proto/bicycle.proto` to codegen your own da
 
 ### Desktop GUIs
 
-Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0::50051`, and they should be able to automatically load up all your RPCs.
+Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0:50051`, and they should be able to automatically load up all your RPCs.
 
 ## Embedding
 
