@@ -850,13 +850,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "example_sproc"
-version = "0.1.0"
-dependencies = [
- "bicycle_shims",
-]
-
-[[package]]
 name = "fallible-iterator"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

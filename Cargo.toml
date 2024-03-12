@@ -64,7 +64,6 @@ members = [
     "engines/sqlite",
     "examples/client",
     "examples/embed",
-    "examples/sproc",
     "proto",
     "shims",
     "server",
