@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-[workspace]
-
 [package]
 name = "example_embed"
 version = "0.1.0"
@@ -25,4 +23,4 @@ authors = ["sean watters <sean@ordinarylabs.io>"]
 license = "AGPL-3.0-only"
 
 [dependencies]
-bicycle = { package = "bicycle_core", path = "../../core" }
+bicycle_core = { path = "../../core" }

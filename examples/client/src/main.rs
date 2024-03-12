@@ -17,9 +17,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use bicycle;
-use bicycle::proto::{bicycle_client::BicycleClient, index_query::Expression, Example, IndexQuery};
-use bicycle::tonic::Request;
+use bicycle_core;
+use bicycle_core::proto::{
+    bicycle_client::BicycleClient, index_query::Expression, Example, IndexQuery,
+};
+use bicycle_core::tonic::Request;
 
 use std::error::Error;
 

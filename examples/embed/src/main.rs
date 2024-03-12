@@ -17,17 +17,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use bicycle;
-use bicycle::proto::{index_query::Expression, Example, IndexQuery};
+use bicycle_core;
+use bicycle_core::proto::{index_query::Expression, Example, IndexQuery};
 
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    bicycle::put_example(Example {
+    bicycle_core::put_example(Example {
         pk: "SOME_STR".to_string(),
     })?;
 
-    let examples = bicycle::get_examples_by_pk(IndexQuery {
+    let examples = bicycle_core::get_examples_by_pk(IndexQuery {
         expression: Some(Expression::Eq("SOME_STR".to_string())),
     })?;
 

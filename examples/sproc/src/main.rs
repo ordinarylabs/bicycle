@@ -17,10 +17,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use bicycle;
-use bicycle::prost_types::{value::Kind, ListValue, Value};
-use bicycle::proto::{index_query::Expression, Examples, IndexQuery};
-use bicycle::{recv_in, send_out};
+use bicycle_shims;
+use bicycle_shims::prost_types::{value::Kind, ListValue, Value};
+use bicycle_shims::proto::{index_query::Expression, Examples, IndexQuery};
+use bicycle_shims::{recv_in, send_out};
 
 use std::error::Error;
 
@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let Examples { examples } = bicycle::get_examples_by_pk(IndexQuery {
+    let Examples { examples } = bicycle_shims::get_examples_by_pk(IndexQuery {
         expression: Some(Expression::BeginsWith(begins_with)),
     })?;
 

@@ -184,11 +184,30 @@ fn write_file(path: &str, content: &str) -> Result<(), Box<dyn std::error::Error
 
 pub(crate) fn gen(models: Vec<Model>, engine: &str) -> Result<(), Box<dyn std::error::Error>> {
     // BASE
+
+    let mut sanitized_workspace_cargo_toml = WORKSPACE_CARGO_TOML.to_string();
+
+    let workspace_toml = sanitized_workspace_cargo_toml
+        .parse::<toml::Table>()
+        .unwrap();
+
+    if let Some(members) = workspace_toml["workspace"]["members"].as_array() {
+        for member in members {
+            let member = member.to_string();
+
+            if member.contains("\"examples/") {
+                sanitized_workspace_cargo_toml =
+                    sanitized_workspace_cargo_toml.replace(&format!("{},", member), "");
+            }
+        }
+    }
+
     let workspace_engine = WORKSPACE_ENGINE.replace("sqlite", engine);
-    write_file(
-        "Cargo.toml",
-        &WORKSPACE_CARGO_TOML.replace(&WORKSPACE_ENGINE.to_string(), &workspace_engine),
-    )?;
+
+    let sanitized_workspace_cargo_toml =
+        sanitized_workspace_cargo_toml.replace(&WORKSPACE_ENGINE.to_string(), &workspace_engine);
+
+    write_file("Cargo.toml", &sanitized_workspace_cargo_toml)?;
 
     // CORE
     create_dir("core")?;
