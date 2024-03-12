@@ -24,3 +24,6 @@ license = "AGPL-3.0-only"
 
 [dependencies]
 bicycle_core = { path = "__bicycle__/core" }
+
+[build-dependencies]
+bicycle = { path = "../.." }
