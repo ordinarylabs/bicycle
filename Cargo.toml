@@ -68,7 +68,7 @@ members = [
 ]
 exclude = [
     "examples/client",
-    "examples/embed",
+    "examples/embedded",
     "examples/sproc"
 ]
 

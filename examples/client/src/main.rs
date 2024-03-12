@@ -47,7 +47,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }))
         .await?;
 
-    println!("{:?}", dogs.into_inner());
+    println!("{:#?}", dogs.into_inner());
 
     Ok(())
 }
