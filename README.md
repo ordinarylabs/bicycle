@@ -20,7 +20,7 @@ cargo install bicycle
 
 ### Schema
 
-A Bicycle schema is defined in a simple `.proto` file.
+A Bicycle schema is defined in a `.proto` file, where your models are just protobuf message types.
 
 ```protobuf
 // schema.proto
@@ -38,7 +38,7 @@ message Dog {
 
 ### CLI
 
-Now that you have your schema, you can run the `build` command to generate your Bicycle components.
+With your schema, you can use the `build` command to generate your Bicycle components.
 
 ```bash
 bicycle build schema.proto
@@ -46,7 +46,7 @@ bicycle build schema.proto
 
 ### Engines
 
-The default engine is RocksDB but `rocksdblib-sys` takes quite awhile for the initial build (subsequent builds should be quicker). If you'd like a faster initial build or would prefer SQLite for other reasons you can also use the SQLite engine by supplying the `--engine` flag.
+Bicycle's default storage engine is RocksDB but `rocksdblib-sys` takes quite awhile for the initial build (subsequent builds should be quicker as you iterate on your schema). If you'd like a faster initial build or would prefer SQLite for other reasons you can also use the SQLite engine by supplying the `--engine` flag.
 
 ```bash
 bicycle build schema.proto --engine sqlite
@@ -196,25 +196,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-### Other Languages
+## Biplane Functions (a.k.a SPROCs)
 
-Currently no other languages are officially supported for embedding, but it is the intention to add support via FFIs at some point in the future. Because it will mostly be passing encoded protobuf messages through as bytes it should be fairly straightforward to implement bindings for other languages with protobuf support.
-
-## SPROCS
-
-Stored procedures are supported in the form of *Biplane Functions* which can be written in Rust built for the `wasm32-wasi` target.
-
-`bicycle fn` commands depend on `cargo-wasi` when compiling for `--lang rust`; it can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
+Stored procedures are supported in the form of _Biplane Functions_ which can be written in Rust built for the `wasm32-wasi` target.
 
 ### Definition
 
-For this example we want to create a stored procedure that will return only the `Dog`'s names. To create a new SPROC we run the following
+For this example we want to create a stored procedure that will return only the `Dog`'s names. To create a new function we run the following
 
 ```bash
 cargo new dog-names-fn
 ```
 
-Some additional items need to be added to the `Cargo.toml`. The host shims are provided by the build output in `__bicycle__` and will need to be added as a dependency. You will also need to set your build target's name to `"biplane_function"` and optionally adjust the release profile to produce smaller WASM binaries.
+Some additional items need to be added to the `Cargo.toml`. The host shims are provided by the build output in `__bicycle__` and will need to be added as a dependency. You will also need to set the target binary's name to `"biplane_function"` and optionally adjust the release profile to produce smaller WASM binaries.
 
 ```toml
 # dog-names-fn/Cargo.toml
@@ -237,11 +231,7 @@ opt-level = 'z'
 codegen-units = 1
 ```
 
-For a basic SPROC example we have the following which uses the `recv_in` to get the dynamic input passed to the SPROC by the caller.
-
-Once we have the "begins_with" argument from `recv_in` we use the `get_dogs_by_pk` shim to grab the requested `Dog`s from the host, map over just their names, and then send the output back to the host via `send_out`. Once the host captures the result of `send_out` they will forward it onto the caller.
-
-**NOTE**: all SPROC I/O utilizes the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf type and `bicycle_shims` re-exports `prost-types` crate which provides the Rust implementation of the `Value` type for you.
+All Biplane Function I/O utilizes the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf type; `bicycle_shims` conveniently re-exports the `prost-types` crate which provides the Rust implementation for the `Value` type.
 
 ```rust
 // dog-names-fn/src/main.rs
@@ -295,6 +285,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 ### Invoking
 
+`bicycle fn` commands depend on `cargo-wasi` when compiling for `--lang rust`; the binary can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
+
 To test the procedure as a one-off against your Bicycle server
 
 ```bash
@@ -326,7 +318,7 @@ bicycle fn invoke \
 
 ### Caveats
 
-SPROCS are not yet transactional, so any error that causes the procedure to terminate prematurely can result in partial writes. It is the intention to make SPROCS transactional at some later date.
+Biplane Functions are not yet transactional, so any error that causes the procedure to terminate prematurely can result in partial writes. It is the intention to make Biplane Functions transactional at some later date.
 
 Only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
 
