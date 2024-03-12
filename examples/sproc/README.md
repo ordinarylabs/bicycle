@@ -1,21 +1,80 @@
-# SPROC Example
+# Biplane Function (SPROC) Example
 
-With `./server` running you can test with the following commands.
+## Setup
 
-## Invoke One-off
+(swap the `cargo run --manifest-path ../../Cargo.toml --` for `bicycle` command for typical usage)
 
-```
-cargo run -- fn invoke --addr http://0.0.0.0:50051 --lang rust --path ./examples/sproc --args '{"begins_with": ""}'
-```
+```bash
+## generate the initial __bicycle__ build.
+cargo run --manifest-path ../../Cargo.toml -- build schema.proto --engine sqlite
 
-## Deploy Procedure
-
-```
-cargo run -- fn deploy --addr http://0.0.0.0:50051 --lang rust --path ./examples/sproc --name test  
+## build.rs will now handle any future schema.proto changes
 ```
 
-## Invoke Deployed Procedure
+## Run The Database Server
 
+```bash
+## use the CLI
+cargo run --manifest-path ../../Cargo.toml -- start
+
+## run the server from the binary
+RUST_LOG=info ./__bicycle__/target/release/bicycle_server
 ```
-cargo run -- fn invoke --addr http://0.0.0.0:50051 --name test --args '{"begins_with": ""}'  
+
+## Seed
+
+```bash
+grpcurl -plaintext -d '{
+  "dogs": [
+    {
+      "pk": "1",
+      "name": "Rover",
+      "age": 3,
+      "breed": "Golden Retriever"
+    },
+    {
+      "pk": "2",
+      "name": "Buddy",
+      "age": 2,
+      "breed": "Labrador"
+    },
+    {
+      "pk": "3",
+      "name": "Max",
+      "age": 4,
+      "breed": "Poodle"
+    }
+  ]
+}' 0.0.0.0:50051 bicycle.Bicycle.BatchPutDogs
+```
+
+## Test Biplane Function
+
+### Deploy
+
+```bash
+cargo run --manifest-path ../../Cargo.toml -- fn deploy \
+    --addr http://0.0.0.0:50051 \
+    --lang rust \
+    --path . \
+    --name dog-names  
+```
+
+### Invoke Deployed
+
+```bash
+cargo run --manifest-path ../../Cargo.toml -- fn invoke \
+    --addr http://0.0.0.0:50051 \
+    --name dog-names \
+    --args '{"begins_with": ""}'  
+```
+
+### Invoke One-off
+
+```bash
+cargo run --manifest-path ../../Cargo.toml -- fn invoke \
+    --addr http://0.0.0.0:50051 \
+    --lang rust \
+    --path . \
+    --args '{"begins_with": ""}'
 ```

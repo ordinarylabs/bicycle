@@ -19,16 +19,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use bicycle_shims;
 use bicycle_shims::prost_types::{value::Kind, ListValue, Value};
-use bicycle_shims::proto::{index_query::Expression, Examples, IndexQuery};
+use bicycle_shims::proto::{index_query::Expression, Dogs, IndexQuery};
 use bicycle_shims::{recv_in, send_out};
 
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // get input from the host Bicycle server context, sent by caller
     let val: Option<Value> = recv_in()?;
 
     let mut begins_with = "".to_string();
 
+    // extract "begins_with" from `Value`
     if let Some(Value {
         kind: Some(Kind::StructValue(struct_val)),
     }) = val
@@ -43,18 +45,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let Examples { examples } = bicycle_shims::get_examples_by_pk(IndexQuery {
+    // get dogs from the host Bicycle server
+    let Dogs { dogs } = bicycle_shims::get_dogs_by_pk(IndexQuery {
         expression: Some(Expression::BeginsWith(begins_with)),
     })?;
 
-    let pks = examples
+    // build a list of dog names as `StringValue`s
+    let names = dogs
         .into_iter()
-        .map(|example| Value {
-            kind: Some(Kind::StringValue(example.pk)),
+        .map(|dog| Value {
+            kind: Some(Kind::StringValue(dog.name)),
         })
         .collect::<Vec<Value>>();
 
+    // set output for host Bicycle server to read in and send back to caller
     send_out(Some(Value {
-        kind: Some(Kind::ListValue(ListValue { values: pks })),
+        kind: Some(Kind::ListValue(ListValue { values: names })),
     }))
 }
