@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a protobuf defined database framework.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -17,14 +17,5 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-syntax = "proto3";
-package plugin;
-
-message Echo {
-  string hiya_buddy = 1;
-}
-
-service Plugin {
-  rpc PluginEcho(Echo) returns (Echo) {}
-  rpc PluginEchoLoud(Echo) returns (Echo) {}
-}
+tonic::include_proto!("bicycle");
+pub const FILE_DESCRIPTOR_SET: &[u8] = tonic::include_file_descriptor_set!("bicycle_descriptor");

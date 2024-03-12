@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a protobuf defined database framework.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -17,13 +17,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-use std::{env, path::PathBuf};
-
 fn main() {
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-
     tonic_build::configure()
-        .file_descriptor_set_path(out_dir.join("plugin_descriptor.bin"))
-        .compile(&["plugin.proto"], &["."])
+        .build_client(false)
+        .build_server(false)
+        .build_transport(false)
+        .compile(&["../proto/bicycle.proto"], &["../proto"])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 }

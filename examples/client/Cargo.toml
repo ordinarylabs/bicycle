@@ -14,37 +14,16 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+[workspace]
+
 [package]
-name = "bicycle_server"
-version.workspace = true
+name = "example_client"
+version = "0.1.0"
 edition = "2021"
-license.workspace = true
-authors.workspace = true
-description = "gRPC database server for the Bicycle framework"
-repository.workspace = true
-homepage.workspace = true
-categories.workspace = true
+authors = ["sean watters <sean@ordinarylabs.io>"]
+license = "AGPL-3.0-only"
 
 [dependencies]
-bicycle_core = { workspace = true }
-bicycle_proto = { workspace = true }
-
-parking_lot = { workspace = true }
-prost = { workspace = true }
-prost-types = { workspace = true }
-
-tonic = { workspace = true }
-tonic-reflection = { workspace = true }
-
-lazy_static = { workspace = true }
-
-tokio-stream = { workspace = true }
-tokio = { workspace = true }
-
-env_logger = { workspace = true }
-log = { workspace = true }
-
-jemallocator = "0.5.0"
-
-[build-dependencies]
-tonic-build = { workspace = true }
+bicycle = { package = "bicycle_core", path = "../../core" }
+tokio = { version = "1.36.0", features = ["rt", "macros", "rt-multi-thread"] }

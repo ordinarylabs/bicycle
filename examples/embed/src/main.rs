@@ -17,12 +17,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#![doc = include_str!("../../README.md")]
+use bicycle;
+use bicycle::proto::{index_query::Expression, Example, IndexQuery};
 
-pub(crate) const PRECOMPILE_DIR: &'static str = "./__bicycle__";
+use std::error::Error;
 
-mod build;
-pub use build::build;
+fn main() -> Result<(), Box<dyn Error>> {
+    bicycle::put_example(Example {
+        pk: "SOME_STR".to_string(),
+    })?;
 
-pub(crate) mod gen;
-pub(crate) mod utils;
+    let examples = bicycle::get_examples_by_pk(IndexQuery {
+        expression: Some(Expression::Eq("SOME_STR".to_string())),
+    })?;
+
+    println!("{:#?}", examples);
+
+    Ok(())
+}

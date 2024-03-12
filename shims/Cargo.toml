@@ -1,4 +1,4 @@
-# Bicycle is a database database framework.
+# Bicycle is a protobuf defined database framework.
 
 # Copyright (C) 2024 Ordinary Labs
 
@@ -16,21 +16,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "bicycle-plugin-echo"
-version = "0.1.0"
+name = "bicycle_shims"
+version.workspace = true
 edition = "2021"
-license = "AGPL-3.0-only"
-authors = ["sean watters <sean@ordinarylabs.io>"]
-description = "Plugin example for the Bicycle project"
-repository = "https://github.com/ordinarylabs/bicycle"
-homepage = "https://ordinarylabs.io"
-categories = ["database"]
+license.workspace = true
+authors.workspace = true
+description = "WebAssembly SPROC shims for the Bicycle framework"
+repository.workspace = true
+homepage.workspace = true
+categories = []
 
 [dependencies]
-tonic = { workspace = true } 
-prost = { workspace = true } 
+wee_alloc = "0.4.5"
 
-heck = "0.4.1"
+prost = { workspace = true }
+prost-types = { workspace = true }
+
+tonic = { version = "0.10.2", default-features = false, features = ["prost", "codegen"] }
 
 [build-dependencies]
 tonic-build = { workspace = true }

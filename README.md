@@ -1,19 +1,12 @@
 # Bicycle 🚲
 
 [![ci](https://github.com//ordinarylabs/bicycle/actions/workflows/ci.yml/badge.svg)](https://github.com//ordinarylabs/bicycle/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/bicycle.svg)](https://crates.io/crates/bicycle)
+[![docs.rs](https://docs.rs/bicycle/badge.svg)](https://docs.rs/bicycle/)
 [![license](https://img.shields.io/github/license/ordinarylabs/bicycle.svg)](https://github.com/ordinarylabs/bicycle/blob/main/LICENSE)
 [![dependency status](https://deps.rs/repo/github/ordinarylabs/bicycle/status.svg)](https://deps.rs/repo/github/ordinarylabs/bicycle)
 
-Bicycle is a framework for defining database schemas with protobuf such that access patterns are generated as code and compiled into the database server itself. The goal is to reduce bandwidth and the overhead of query/response parsing at run time by using a binary serialization format and empowering the compiler do query planning ahead of time.
-
-## Why the name?
-
-The Bicycle is a metaphor for useful complexity, and one of the more influential inventions in history. 
-It is also an interesting analogy for the anatomy of the framework...
-
-- Wheels (transport): gRPC
-- Frame (storage engine): RocksDB
-- Pedals, gears, handlebars, breaks, etc. (logic): Rust
+Protobuf defined database framework.
 
 ## Install
 
@@ -25,7 +18,9 @@ cargo install bicycle
 
 ## Usage
 
-A Bicycle schema is defined in a simple `.proto` file.
+### Schema
+
+A Bicycle schema is defined in a `.proto` file, where your models are just protobuf message types.
 
 ```protobuf
 // schema.proto
@@ -40,93 +35,39 @@ message Dog {
   string breed = 4;
 }
 ```
-### Create
 
-Run the `create` command to generate your Bicycle server binary and protobuf definition.
+### CLI
 
-```bash
-bicycle create schema.proto
-```
-
-Now in the `out/` directory you'll have `server` and `bicycle.proto`.
-
-### Plugins
-
-Plugins allow you to mix functionality into your Bicycle server. Plugins are just basic Rust crates that export a gRPC file descriptor, `Server` and `Service` generated with [Tonic](https://github.com/hyperium/tonic); they can be added from the [crates.io](https://crates.io) registry, a relative path, or a git repository.
-
-Formatting for `--plugins` flag:
-
-- `crates.io:plugin-name@0.0.0` 
-- `path:plugin-name@../plugin-path` 
-- `git:plugin-name@https:://github.com/user/plugin-name.git#rev:4c59b707|branch:next|tag:0.0.0`
+With your schema, you can use the `build` command to generate your Bicycle components.
 
 ```bash
-bicycle create schema.proto --plugins crates.io:bicycle-plugin-echo@0.1.0
+bicycle build schema.proto
 ```
 
-## Running
+### Engines
 
-You can now run the server binary with the following command.
+Bicycle's default storage engine is RocksDB but `rocksdblib-sys` takes quite awhile for the initial build (subsequent builds should be quicker as you iterate on your schema). If you'd like a faster initial build or would prefer SQLite for other reasons you can also use the SQLite engine by supplying the `--engine` flag.
 
 ```bash
-./out/server
+bicycle build schema.proto --engine sqlite
 ```
 
-## Clients
+## Server
 
-You can also use the `./out/bicycle.proto` (see example output below) to build your database clients.
+### Start
 
-Because the Bicycle server is just a gRPC server, you can use the gRPC libraries for any language you like. Additionally, Bicycle servers implement [server reflection] you can also roll over to your preferred gRPC GUI client (i.e Postman), type in `0.0.0.0::50051`, and it will automatically load up all your available RPCs.
-
-```protobuf
-// out/bicycle.proto
-syntax = "proto3";
-package bicycle;
-
-message Dogs { 
-  repeated Dog dogs = 1; 
-}
-message Dog {
-  string pk = 1;
-  string name = 2;
-  uint32 age = 3;
-  string breed = 4;
-}
-
-message IndexQuery {
-  oneof expression {
-    string eq = 1;
-    string gte = 2;
-    string lte = 3;
-    string begins_with = 4;
-  }
-}
-
-message Empty {}
-
-service Bicycle {
-  rpc GetDogsByPk(IndexQuery) returns (Dogs) {}
-  rpc DeleteDogsByPk(IndexQuery) returns (Empty) {}
-  rpc PutDog(Dog) returns (Empty) {}
-  rpc BatchPutDogs(Dogs) returns (Empty) {}
-}
-```
-
-## Example
-
-Basically we have 4 RPCs for each model:
-
-- `GetXByPk`
-- `DeleteXByPk`
-- `PutX`
-- `BatchPutX`
-
-And then you have the `IndexQuery` helper which basically allows you to do key-range queries. 
-
-Here are the really basic examples:
+You can now start the server with the following command.
 
 ```bash
-## PutDog
+bicycle start
+```
+
+### Testing RPCs
+
+To test some basic CRUD you can use [gRPCurl](https://github.com/fullstorydev/grpcurl)
+
+```bash
+## Put
 grpcurl -plaintext -d '{
   "pk": "1",
   "name": "Rover",
@@ -134,7 +75,7 @@ grpcurl -plaintext -d '{
   "breed": "Golden Retriever"
 }' 0.0.0.0:50051 bicycle.Bicycle.PutDog
 
-## BatchPutDogs
+## BatchPut
 grpcurl -plaintext -d '{
   "dogs": [
     {
@@ -152,9 +93,235 @@ grpcurl -plaintext -d '{
   ]
 }' 0.0.0.0:50051 bicycle.Bicycle.BatchPutDogs
 
-## GetDogs
+## GetByPk
 grpcurl -plaintext -d '{"begins_with": ""}' 0.0.0.0:50051 bicycle.Bicycle.GetDogsByPk
 
-## DeleteDogs
+## DeleteByPk
 grpcurl -plaintext -d '{"eq": "3"}' 0.0.0.0:50051 bicycle.Bicycle.DeleteDogsByPk
 ```
+
+## Client
+
+### Rust
+
+The Rust client code is generated by default and can be added to any Rust project as a dependency
+
+```toml
+# dogs-app/Cargo.toml
+[dependencies]
+bicycle = { package = "bicycle_core", path = "__bicycle__/core" }
+tokio = { version = "1.36.0", features = ["rt", "macros", "rt-multi-thread"] }
+```
+
+Call the Bicycle server from your Rust app
+
+```rust
+// dogs-app/src/main.rs
+use bicycle;
+use bicycle::proto::{bicycle_client::BicycleClient, index_query::Expression, Dog, IndexQuery};
+use bicycle::tonic::Request;
+
+use std::error::Error;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    // establish connection to remote Bicycle server
+    let mut client = BicycleClient::connect("http://0.0.0.0:50051").await?;
+
+    // write a dog to remote Bicycle server
+    client
+        .put_dog(Request::new(Dog {
+            pk: "4".to_string(),
+            name: "Sam".to_string(),
+            age: 6,
+            breed: "Labrador".to_string(),
+        }))
+        .await?;
+
+    // get dog back from remote Bicycle server
+    let dogs = client
+        .get_dogs_by_pk(Request::new(IndexQuery {
+            expression: Some(Expression::Eq("4".to_string())),
+        }))
+        .await?;
+
+    Ok(())
+}
+```
+
+### Other Languages
+
+You can also use the ` ./__bicycle__/proto/bicycle.proto` to codegen your own database clients for any other language. Because the Bicycle server is just a gRPC server, any language with gRPC support also has Bicycle client support.
+
+### Desktop GUIs
+
+Bicycle servers also implement [server reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md), so you can roll over to your preferred gRPC desktop client (i.e Postman, BloomRPC), type in `0.0.0.0::50051`, and they should be able to automatically load up all your RPCs.
+
+## Embedding
+
+### Rust
+
+In addition to the gRPC server based implementation, you can also use the generated Rust `core` functions without using gRPC at all. The query/storage formats remain protobuf, but without the remote server interaction.
+
+You can import the core functionality into your project by adding the generated `bicycle_core` as a dependency in your `Cargo.toml`
+
+```toml
+# embedded-dogs/Cargo.toml
+[dependencies]
+bicycle = { package = "bicycle_core", path = "__bicycle__/core" }
+```
+
+```rust
+// embedded-dogs/src/main.rs
+use bicycle;
+use bicycle::proto::{index_query::Expression, Dog, IndexQuery};
+
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    // write a dog to local Bicycle
+    bicycle::put_dog(Dog {
+        pk: "0".to_string(),
+        name: "Ollie".to_string(),
+        age: 7,
+        breed: "Pitty".to_string(),
+    })?;
+
+    // get that dog back from local Bicycle
+    let dogs = bicycle::get_dogs_by_pk(IndexQuery {
+        expression: Some(Expression::Eq("0".to_string())),
+    })?;
+
+    Ok(())
+}
+```
+
+## Biplane Functions (a.k.a SPROCs)
+
+Stored procedures are supported in the form of _Biplane Functions_ which can be written in Rust built for the `wasm32-wasi` target.
+
+### Definition
+
+For this example we want to create a stored procedure that will return only the `Dog`'s names. To create a new function we run the following
+
+```bash
+cargo new dog-names-fn
+```
+
+Some additional items need to be added to the `Cargo.toml`. The host shims are provided by the build output in `__bicycle__` and will need to be added as a dependency. You will also need to set the target binary's name to `"biplane_function"` and optionally adjust the release profile to produce smaller WASM binaries.
+
+```toml
+# dog-names-fn/Cargo.toml
+
+## shims to interact more cleanly with the host functions
+[dependencies]
+bicycle = { package = "bicycle_shims", path = "__bicycle__/shims" }
+
+## set the binary name to "biplane_function" so the CLI can deploy it
+[[bin]]
+path = "src/main.rs"
+name = "biplane_function"
+
+## recommended for smaller binaries
+## also see: https://github.com/johnthagen/min-sized-rust
+[profile.release]
+strip = true
+lto = true
+opt-level = 'z'
+codegen-units = 1
+```
+
+All Biplane Function I/O utilizes the [`Value`](https://protobuf.dev/reference/protobuf/google.protobuf/#value) protobuf type; `bicycle_shims` conveniently re-exports the `prost-types` crate which provides the Rust implementation for the `Value` type.
+
+```rust
+// dog-names-fn/src/main.rs
+use bicycle;
+use bicycle::prost_types::{value::Kind, ListValue, Value};
+use bicycle::proto::{index_query::Expression, Dogs, IndexQuery};
+use bicycle::{recv_in, send_out};
+
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    // get input from the host Bicycle server context, sent by caller
+    let val: Option<Value> = recv_in()?;
+
+    let mut begins_with = "".to_string();
+
+    // extract "begins_with" from `Value`
+    if let Some(Value {
+        kind: Some(Kind::StructValue(struct_val)),
+    }) = val
+    {
+        if let Some(Kind::StringValue(val)) = struct_val
+            .fields
+            .get("begins_with")
+            .map(|v| v.kind.as_ref())
+            .flatten()
+        {
+            begins_with = val.clone()
+        }
+    }
+
+    // get dogs from the host Bicycle server
+    let Dogs { dogs } = bicycle::get_dogs_by_pk(IndexQuery {
+        expression: Some(Expression::BeginsWith(begins_with)),
+    })?;
+
+    // build a list of dog names as `StringValue`s
+    let names = dogs
+        .into_iter()
+        .map(|dog| Value {
+            kind: Some(Kind::StringValue(dog.name)),
+        })
+        .collect::<Vec<Value>>();
+
+    // set output for host Bicycle server to read in and send back to caller
+    send_out(Some(Value {
+        kind: Some(Kind::ListValue(ListValue { values: names })),
+    }))
+}
+```
+
+### Invoking
+
+`bicycle fn` commands depend on `cargo-wasi` when compiling for `--lang rust`; the binary can be installed using `cargo install cargo-wasi` (details [here](https://bytecodealliance.github.io/cargo-wasi/install.html)).
+
+To test the procedure as a one-off against your Bicycle server
+
+```bash
+bicycle fn invoke \
+  --addr http://0.0.0.0:50051 \
+  --lang rust \
+  --path ./dog-names-fn \
+  --args '{"begins_with": ""}'
+```
+
+To store the procedure on your Bicycle server for future execution
+
+```bash
+bicycle fn deploy \
+  --addr http://0.0.0.0:50051 \
+  --lang rust \
+  --path ./dog-names-fn \
+  --name dog-names-fn
+```
+
+To execute a previously stored procedure on your Bicycle server
+
+```bash
+bicycle fn invoke \
+  --addr http://0.0.0.0:50051 \
+  --name dog-names-fn \
+  --args '{"begins_with": ""}'
+```
+
+### Caveats
+
+Biplane Functions are not yet transactional, so any error that causes the procedure to terminate prematurely can result in partial writes. It is the intention to make Biplane Functions transactional at some later date.
+
+Only `stdio` is inherited from the host context and the additional WASI APIs are not supported (this means your `println!()`s will show up on the host but you don't have access to things like the file system).
+
+## License
+
+[AGPL-v3](https://opensource.org/license/AGPL-v3)

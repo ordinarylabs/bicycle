@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a protobuf defined database framework.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -20,16 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 syntax = "proto3";
 package bicycle;
 
-message Person {
-    message Dog {
-        string pk = 1;
-        string breed = 2;
-    }
-
+message Example {
     string pk = 1;
-    string name = 2;
-    uint32 age = 3;
-    repeated Dog dogs = 4;
 }
 
         

@@ -1,5 +1,5 @@
 /*
-Bicycle is a database database framework.
+Bicycle is a protobuf defined database framework.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -24,6 +24,6 @@ fn main() {
 
     tonic_build::configure()
         .file_descriptor_set_path(precompile_dir.join("bicycle_descriptor.bin"))
-        .compile(&["bicycle.proto"], &["proto"])
+        .compile(&["bicycle.proto"], &["."])
         .unwrap_or_else(|e| panic!("Failed to compile protos {:?}", e));
 }

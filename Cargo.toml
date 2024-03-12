@@ -1,4 +1,4 @@
-# Bicycle is a database database framework.
+# Bicycle is a protobuf defined database framework.
 
 # Copyright (C) 2024 Ordinary Labs
 
@@ -21,7 +21,7 @@ version.workspace = true
 edition = "2021"
 license.workspace = true
 authors.workspace = true
-description = "Builder tool for the Bicycle project"
+description = "CLI for the Bicycle framework"
 repository.workspace = true
 homepage.workspace = true
 categories = ["command-line-utilities", "database"]
@@ -42,18 +42,29 @@ path = "cli/src/main.rs"
 [dependencies]
 heck = "0.4.1"
 toml = "0.8.10"
+serde_json = "1.0.114"
+clap = { version = "4.5.1", features = ["derive", "cargo"] }
 
 lazy_static = { workspace = true }
 
 prost = { workspace = true }
 prost-types = { workspace = true }
+
+tokio = { workspace = true }
+
+tonic = { workspace = true }
 tonic-build = { workspace = true }
+
+bicycle_proto = { workspace = true }
 
 [workspace]
 members = [
     "core", 
-    "server", 
-    "plugins/echo",
+    "engines/rocksdb",
+    "engines/sqlite",
+    "proto",
+    "shims",
+    "server",
 ]
 
 [workspace.package]
@@ -63,10 +74,15 @@ homepage = "https://ordinarylabs.io"
 repository = "https://github.com/ordinarylabs/bicycle"
 license = "AGPL-3.0-only"
 categories = ["database"]
-version = "0.1.8"
+version = "0.2.0-alpha.3"
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
+
+log = "0.4.21"
+env_logger = "0.11.3"
+
+parking_lot = "0.12.1"
 
 prost = "0.12.3"
 prost-types = "0.12.3"
@@ -75,10 +91,13 @@ tonic = "0.10.2"
 tonic-build = "0.10.2"
 tonic-reflection = "0.10.2"
 
-rocksdb = "0.21.0"
-
 tokio-stream = "0.1.14"
-tokio = "1.36.0"
+tokio = { version = "1.36.0", features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
 
-bicycle_core = { path = "./core", version = "0.1.8" }
-bicycle_server = { path = "./server", version = "0.1.8" }
+##START_WORKSPACE_ENGINE##
+engine = { package = "bicycle_sqlite", path = "./engines/sqlite", version = "0.2.0-alpha.3" }
+##END_WORKSPACE_ENGINE##
+
+bicycle_proto = { path = "./proto", version = "0.2.0-alpha.3" }
+bicycle_core = { path = "./core", version = "0.2.0-alpha.3" }
+bicycle_server = { path = "./server", version = "0.2.0-alpha.3" }
