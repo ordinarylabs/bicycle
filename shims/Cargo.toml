@@ -27,8 +27,6 @@ homepage.workspace = true
 categories = []
 
 [dependencies]
-wee_alloc = "0.4.5"
-
 prost = { workspace = true }
 prost-types = { workspace = true }
 
