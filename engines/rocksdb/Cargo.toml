@@ -27,7 +27,7 @@ homepage.workspace = true
 categories = ["database"]
 
 [dependencies]
-rocksdb = "0.21.0"
+rocksdb = "0.22.0"
 
 lazy_static = { workspace = true }
 prost = { workspace = true }
