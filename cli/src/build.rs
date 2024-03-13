@@ -1,5 +1,5 @@
 /*
-Bicycle is a protobuf defined database framework.
+BicycleDB is a protobuf-defined database management system.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -30,10 +30,10 @@ use prost_types::FileDescriptorSet;
 use crate::utils::construct_model;
 use crate::{gen, utils::Model, PRECOMPILE_DIR};
 
-/// builds Bicycle components.
+/// builds BicycleDB components.
 ///
 /// * `schema_path` - path to the schema.proto file
-/// * `engine` - the database engine used
+/// * `engine` - the database engine used (supports "sqlite" and "rocksdb")
 pub fn build(schema_path: &str, engine: &str) -> Result<(), Box<dyn std::error::Error>> {
     if !Path::new(PRECOMPILE_DIR).exists() {
         fs::create_dir(PRECOMPILE_DIR)?;

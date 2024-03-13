@@ -1,5 +1,5 @@
 /*
-Bicycle is a protobuf defined database framework.
+BicycleDB is a protobuf-defined database management system.
 
 Copyright (C) 2024 Ordinary Labs
 
@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#![doc = include_str!("../../README.md")]
+#![doc = include_str!("../README.md")]
 
 pub(crate) const PRECOMPILE_DIR: &'static str = "./__bicycle__";
 
