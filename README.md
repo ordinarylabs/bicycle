@@ -8,7 +8,7 @@
 
 Accelerating development and improving DevEx without sacrificing performance.
 
-BicycleDB is a tool for compiling database servers with application models and access patterns built in at compile time; with protobuf as the storage and transport format, each database instance is a gRPC server compiled from Rust, backed by a RocksDB or SQLite storage engine.
+BicycleDB is a tool for compiling database servers where application models and access patterns built in at compile time; with protobuf as the transport/storage format, each database instance is a gRPC server compiled from Rust, backed by a RocksDB or SQLite storage engine.
 
 ## CLI
 
