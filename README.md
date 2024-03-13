@@ -12,19 +12,19 @@ BicycleDB is a tool for compiling database servers with application models and a
 
 ## CLI
 
-See the BicycleDB Manager CLI documentation [here](https://crates.io/crates/bicycle). For querying any of [these](https://github.com/grpc-ecosystem/awesome-grpc?tab=readme-ov-file#cli) should work.
+See the BicycleDB Manager CLI documentation [here](https://crates.io/crates/bicycle). For querying, any of [these](https://github.com/grpc-ecosystem/awesome-grpc?tab=readme-ov-file#cli) should work.
 
 ## GUI
 
-BicycleDB server support reflection, so any of [these](https://github.com/grpc-ecosystem/awesome-grpc?tab=readme-ov-file#gui) should work.
+BicycleDB servers support reflection, so any of [these](https://github.com/grpc-ecosystem/awesome-grpc?tab=readme-ov-file#gui) should work.
 
 ## Supported Features
 
 - Key/Value storage and retrieval
 - Range queries via `gte`, `lte` and `begins_with`
 - Stored Procedures via WebAssembly (non-transactional)
-- Embedding for offline usage or local storage
-- Protobuf message nesting for "document-like" records
+- Embedding for offline or local storage
+- Protobuf message nesting for document-like records
 
 ## Planned Features
 
