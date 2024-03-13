@@ -14,6 +14,6 @@ cargo run --manifest-path ../../Cargo.toml -- build schema.proto --engine sqlite
 ## Test The Database Interaction
 
 ```bash
-## build the project with `__bicycle__/core` import now available.
+## run the project with `__bicycle__/core` import now available.
 cargo run
 ```
