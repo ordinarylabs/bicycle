@@ -23,9 +23,4 @@ package bicycle;
 message Example {
     string pk = 1;
 }
-
-message Example2 {
-    string pk = 1;
-}
-
         
