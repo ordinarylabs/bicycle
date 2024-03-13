@@ -25,7 +25,7 @@ description = "The CLI and build functions for BicycleDB."
 repository.workspace = true
 homepage.workspace = true
 categories = ["command-line-utilities"]
-keywords = ["cli", "database", "grpc", "rocksdb", "sqlite"]
+keywords = ["database", "protobuf", "grpc", "rocksdb", "sqlite"]
 readme = "cli/README.md"
 include = ["/cli"]
 
@@ -82,7 +82,7 @@ license = "AGPL-3.0-only"
 categories = ["database"]
 ## !! version can't ever collide with other versions
 ## !! formatted as `version = "x.x.x"` in this file
-version = "0.2.1"
+version = "0.2.2"
 
 [workspace.dependencies]
 lazy_static = "1.4.0"
@@ -103,9 +103,9 @@ tokio-stream = "0.1.14"
 tokio = { version = "1.36.0", features = ["parking_lot", "rt-multi-thread", "macros", "sync", "time"] }
 
 ##START_WORKSPACE_ENGINE##
-engine = { package = "bicycle_sqlite", path = "./engines/sqlite", version = "0.2.1" }
+engine = { package = "bicycle_sqlite", path = "./engines/sqlite", version = "0.2.2" }
 ##END_WORKSPACE_ENGINE##
 
-bicycle_proto = { path = "./proto", version = "0.2.1" }
-bicycle_core = { path = "./core", version = "0.2.1" }
-bicycle_server = { path = "./server", version = "0.2.1" }
+bicycle_proto = { path = "./proto", version = "0.2.2" }
+bicycle_core = { path = "./core", version = "0.2.2" }
+bicycle_server = { path = "./server", version = "0.2.2" }

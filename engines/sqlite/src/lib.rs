@@ -22,6 +22,7 @@ extern crate lazy_static;
 
 use std::error::Error;
 
+use r2d2_sqlite::rusqlite::params_from_iter;
 use r2d2_sqlite::rusqlite::Statement;
 
 use r2d2_sqlite::rusqlite;
@@ -52,11 +53,11 @@ lazy_static! {
 
 // HELPERS
 
-fn get_from_statement<T>(stmt: &mut Statement, val: &str) -> Result<Vec<T>, Box<dyn Error>>
+fn get_from_statement<T>(stmt: &mut Statement, p: &[&str]) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: prost::Message + Default,
 {
-    let rows = stmt.query_map(&[val], |row| {
+    let rows = stmt.query_map(params_from_iter(p), |row| {
         let v: Vec<u8> = row.get(0)?;
         let res: Result<T, rusqlite::Error> = match prost::Message::decode(&*v) {
             Ok(decoded) => Ok(decoded),
@@ -119,7 +120,7 @@ where
     let conn = SQLITE_POOL.get()?;
     let mut stmt = conn.prepare("SELECT b FROM records WHERE pk = ?")?;
 
-    let res = get_from_statement(&mut stmt, &format!("{}#{}", model, val))?;
+    let res = get_from_statement(&mut stmt, &[&format!("{}#{}", model, val)])?;
     info!("get_eq {}", model);
     Ok(res)
 }
@@ -129,9 +130,12 @@ where
     T: prost::Message + Default,
 {
     let conn = SQLITE_POOL.get()?;
-    let mut stmt = conn.prepare("SELECT b FROM records WHERE pk >= ?")?;
+    let mut stmt = conn.prepare("SELECT b FROM records WHERE pk >= ? AND pk LIKE ?")?;
 
-    let res = get_from_statement(&mut stmt, &format!("{}#{}", model, val))?;
+    let res = get_from_statement(
+        &mut stmt,
+        &[&format!("{}#{}", model, val), &format!("{}#%", model)],
+    )?;
     info!("get_gte {}", model);
     Ok(res)
 }
@@ -141,9 +145,12 @@ where
     T: prost::Message + Default,
 {
     let conn = SQLITE_POOL.get()?;
-    let mut stmt = conn.prepare("SELECT b FROM records WHERE pk <= ?")?;
+    let mut stmt = conn.prepare("SELECT b FROM records WHERE pk <= ? AND pk LIKE ?")?;
 
-    let res = get_from_statement(&mut stmt, &format!("{}#{}", model, val))?;
+    let res = get_from_statement(
+        &mut stmt,
+        &[&format!("{}#{}", model, val), &format!("{}#%", model)],
+    )?;
     info!("get_lte {}", model);
     Ok(res)
 }
@@ -155,7 +162,7 @@ where
     let conn = SQLITE_POOL.get()?;
     let mut stmt = conn.prepare("SELECT b FROM records WHERE pk LIKE ?")?;
 
-    let res = get_from_statement(&mut stmt, &format!("{}#{}%", model, val))?;
+    let res = get_from_statement(&mut stmt, &[&format!("{}#{}%", model, val)])?;
     info!("get_begins_with {}", model);
     Ok(res)
 }
@@ -173,8 +180,8 @@ pub fn delete_eq(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
 
 pub fn delete_gte(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     SQLITE_POOL.get()?.execute(
-        "DELETE FROM records WHERE pk >= ?",
-        &[&format!("{}#{}", model, val)],
+        "DELETE FROM records WHERE pk >= ? AND pk LIKE ?",
+        &[&format!("{}#{}", model, val), &format!("{}#%", model)],
     )?;
     info!("delete_gte {}", model);
     Ok(())
@@ -182,8 +189,8 @@ pub fn delete_gte(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> 
 
 pub fn delete_lte(model: &'static str, val: &str) -> Result<(), Box<dyn Error>> {
     SQLITE_POOL.get()?.execute(
-        "DELETE FROM records WHERE pk <= ?",
-        &[&format!("{}#{}", model, val)],
+        "DELETE FROM records WHERE pk <= ? AND pk LIKE ?",
+        &[&format!("{}#{}", model, val), &format!("{}#%", model)],
     )?;
     info!("delete_lte {}", model);
     Ok(())
