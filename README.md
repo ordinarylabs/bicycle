@@ -34,7 +34,7 @@ BicycleDB servers support reflection, so any of [these](https://github.com/grpc-
 
 ## Examples
 
-Check out example usage for SPROCs, embedding and Rust clients [here](https://github.com/ordinarylabs/bicycle/tree/main/examples).
+Check out stored procedure, offline and client usage examples [here](https://github.com/ordinarylabs/bicycle/tree/main/examples).
 
 ## License
 

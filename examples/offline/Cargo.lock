@@ -226,11 +226,11 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "bicycle"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
- "bicycle_proto 0.2.0",
+ "bicycle_proto 0.2.2",
  "clap",
- "heck",
+ "heck 0.5.0",
  "lazy_static",
  "prost",
  "prost-types",
@@ -268,7 +268,7 @@ dependencies = [
 
 [[package]]
 name = "bicycle_proto"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "prost",
  "prost-types",
@@ -444,7 +444,7 @@ version = "4.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "307bc0538d5f0f83b8248db3087aa92fe504e4691294d0c96c0eabc33f47ba47"
 dependencies = [
- "heck",
+ "heck 0.4.1",
  "proc-macro2",
  "quote",
  "syn",
@@ -731,7 +731,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "example_embed"
+name = "example_offline"
 version = "0.1.0"
 dependencies = [
  "bicycle",
@@ -941,6 +941,12 @@ name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
+
+[[package]]
+name = "heck"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "hermit-abi"
@@ -1453,7 +1459,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c55e02e35260070b6f716a2423c2ff1c3bb1642ddca6f99e1f26d06268a0e2d2"
 dependencies = [
  "bytes",
- "heck",
+ "heck 0.4.1",
  "itertools 0.11.0",
  "log",
  "multimap",
@@ -2576,7 +2582,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca677c36869e45602617b25a9968ec0d895ad9a0aee3756d9dee1ddd89456f91"
 dependencies = [
  "anyhow",
- "heck",
+ "heck 0.4.1",
  "indexmap 2.2.5",
  "wit-parser",
 ]
@@ -2652,7 +2658,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0446357a5a7af0172848b6eca7b2aa1ab7d90065cd2ab02b633a322e1a52f636"
 dependencies = [
  "anyhow",
- "heck",
+ "heck 0.4.1",
  "proc-macro2",
  "quote",
  "shellexpand",

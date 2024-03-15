@@ -1,4 +1,4 @@
-# Embedded Example
+# Offline Example
 
 ## Setup
 

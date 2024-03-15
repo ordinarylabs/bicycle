@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [package]
-name = "example_embed"
+name = "example_offline"
 version = "0.1.0"
 edition = "2021"
 authors = ["sean watters <sean@ordinarylabs.io>"]
